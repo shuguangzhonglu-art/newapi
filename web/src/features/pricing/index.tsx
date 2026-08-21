@@ -150,8 +150,11 @@ export function Pricing() {
 
   if (isLoading) {
     return (
-      <PublicLayout showMainContainer={false}>
-        <div className='mx-auto w-full max-w-[1800px] px-3 pt-16 pb-8 sm:px-6 sm:pt-20 sm:pb-10 xl:px-8'>
+      <PublicLayout
+        showMainContainer={false}
+        className='hema-pricing-page hema-catalog-page'
+      >
+        <div className='hema-catalog-content mx-auto w-full max-w-[1800px] px-3 pt-16 pb-8 sm:px-6 sm:pt-20 sm:pb-10 xl:px-8'>
           <LoadingSkeleton viewMode={viewMode} />
         </div>
       </PublicLayout>
@@ -159,7 +162,10 @@ export function Pricing() {
   }
 
   return (
-    <PublicLayout showMainContainer={false}>
+    <PublicLayout
+      showMainContainer={false}
+      className='hema-pricing-page hema-catalog-page'
+    >
       <div className='relative'>
         <div
           aria-hidden
@@ -176,9 +182,9 @@ export function Pricing() {
               'linear-gradient(to bottom, black 40%, transparent 100%)',
           }}
         />
-        <PageTransition className='relative mx-auto w-full max-w-[1800px] px-3 pt-16 pb-8 sm:px-6 sm:pt-20 sm:pb-10 xl:px-8'>
-          <header className='mx-auto mb-5 max-w-3xl pt-5 text-center sm:mb-10 sm:pt-10'>
-            <h1 className='text-[clamp(2rem,5.5vw,3.5rem)] leading-[1.15] font-bold tracking-tight'>
+        <PageTransition className='hema-catalog-content relative mx-auto w-full max-w-[1800px] px-3 pt-16 pb-8 sm:px-6 sm:pt-20 sm:pb-10 xl:px-8'>
+          <header className='hema-catalog-hero mx-auto mb-5 max-w-3xl pt-5 text-center sm:mb-10 sm:pt-10'>
+            <h1 className='text-3xl leading-[1.15] font-bold tracking-tight sm:text-4xl lg:text-5xl'>
               {t('Model Square')}
             </h1>
             <p className='text-muted-foreground/80 mt-3 text-sm sm:mt-4 sm:text-base'>

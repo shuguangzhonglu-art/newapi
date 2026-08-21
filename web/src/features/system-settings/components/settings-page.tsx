@@ -66,7 +66,7 @@ function SettingsPageFrame(props: SettingsPageFrameProps) {
       actionsContainer={actionsContainer}
       titleStatusContainer={titleStatusContainer}
     >
-      <SectionPageLayout>
+      <SectionPageLayout className='hema-admin-page hema-settings-page'>
         <SectionPageLayout.Title>
           <span className='inline-flex max-w-full min-w-0 items-center gap-2 align-middle'>
             <span className='truncate'>{props.title}</span>

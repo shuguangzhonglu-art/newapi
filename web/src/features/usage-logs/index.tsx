@@ -124,7 +124,10 @@ function UsageLogsContent() {
 
   return (
     <>
-      <SectionPageLayout fixedContent>
+      <SectionPageLayout
+        fixedContent
+        className='hema-data-page hema-usage-logs-page'
+      >
         <SectionPageLayout.Title>
           {t(pageMeta.titleKey)}
         </SectionPageLayout.Title>

@@ -336,6 +336,7 @@ export function DataTablePage<TData>(props: DataTablePageProps<TData>) {
   return (
     <>
       <div
+        data-slot='data-table-page'
         className={cn(
           props.fixedHeight !== false
             ? 'flex h-full min-h-0 flex-col gap-2.5 sm:gap-3'

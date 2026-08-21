@@ -85,7 +85,10 @@ function ModelsContent() {
 
   return (
     <>
-      <SectionPageLayout fixedContent>
+      <SectionPageLayout
+        fixedContent
+        className='hema-data-page hema-models-page'
+      >
         <SectionPageLayout.Title>{t(meta.titleKey)}</SectionPageLayout.Title>
         <SectionPageLayout.Actions>
           {activeSection === 'metadata' ? (

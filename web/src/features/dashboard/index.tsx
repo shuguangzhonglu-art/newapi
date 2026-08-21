@@ -318,7 +318,7 @@ export function Dashboard() {
   const sectionActions = modelActions ?? flowActions
 
   return (
-    <SectionPageLayout>
+    <SectionPageLayout className='hema-dashboard-page'>
       <SectionPageLayout.Title>{t(meta.titleKey)}</SectionPageLayout.Title>
       <SectionPageLayout.Content>
         <div className='space-y-3 sm:space-y-4'>

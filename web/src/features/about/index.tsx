@@ -126,7 +126,7 @@ export function About() {
 
   if (isLoading) {
     return (
-      <PublicLayout>
+      <PublicLayout className='hema-about-page'>
         <div className='mx-auto flex max-w-4xl flex-col gap-4 py-12'>
           <Skeleton className='h-8 w-[45%]' />
           <Skeleton className='h-4 w-full' />
@@ -139,7 +139,7 @@ export function About() {
 
   if (!hasContent) {
     return (
-      <PublicLayout>
+      <PublicLayout className='hema-about-page'>
         <EmptyAboutState />
       </PublicLayout>
     )
@@ -147,7 +147,7 @@ export function About() {
 
   if (isUrl) {
     return (
-      <PublicLayout showMainContainer={false}>
+      <PublicLayout showMainContainer={false} className='hema-about-page'>
         <iframe
           src={rawContent}
           className='h-[calc(100vh-3.5rem)] w-full border-0'
@@ -160,7 +160,7 @@ export function About() {
 
   if (contentIsHtml) {
     return (
-      <PublicLayout showMainContainer={false}>
+      <PublicLayout showMainContainer={false} className='hema-about-page'>
         <RichContent
           mode='html'
           htmlVariant='isolated'
@@ -172,7 +172,7 @@ export function About() {
   }
 
   return (
-    <PublicLayout>
+    <PublicLayout className='hema-about-page'>
       <div className='mx-auto max-w-6xl px-4 py-8'>
         <RichContent
           mode='markdown'

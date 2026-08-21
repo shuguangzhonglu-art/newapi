@@ -39,6 +39,59 @@ web/           — Frontend (React 19, Rsbuild, Base UI, Tailwind)
   src/i18n/    — Frontend internationalization (i18next, en/zh/zh-TW/fr/ru/ja/vi)
 ```
 
+## Hema UI Adaptation Memory
+
+This checkout is an upstream-compatible Hema UI fork. The long-term rule is:
+
+> Maintain the business logic carefully, keep the view layer isolated, and let UI work iterate without entering the core.
+
+Use a thin adaptation layer instead of rewriting upstream architecture:
+
+```text
+Upstream routes, guards, API, auth, stores and business logic
+                              ↓
+                 Hema adapters and wrappers
+                              ↓
+               Hema components, CSS and motion
+```
+
+### Protected upstream behavior
+
+- Do not modify route definitions, route paths, guards, redirect behavior, API contracts, authentication flows, OAuth, CAPTCHA, Passkey, 2FA, billing, or other business logic for a visual change.
+- Do not replace upstream stores or introduce a second global state system only to support theming. Keep server state in the existing React Query layer and shared client state in the existing Zustand stores.
+- UI-only state such as panel visibility, animation state, selected presentation mode, or temporary form presentation should remain local to the Hema component whenever possible.
+- Preserve upstream component props, events, loading states, validation, error handling, and accessibility behavior when wrapping or restyling a feature.
+- If a requested visual result requires changing a protected behavior, stop and explain the boundary before making that change.
+
+### Hema adaptation layer
+
+- Put Hema-specific work in isolated adapters, wrappers, components, assets, and scoped styles. Prefer `web/src/lib/*-adapter.ts`, feature-level presentation wrappers, `web/src/styles/hema-*.css`, and `web/public/hema*` assets.
+- Hema CSS must use scoped `.hema-*` selectors or an explicit Hema root selector. Avoid broad element selectors and global overrides that can leak into upstream pages.
+- Reuse the original page's hooks, mutations, callbacks, form schema, authentication methods, and navigation. A Hema page should change presentation and composition, not duplicate the underlying workflow.
+- Keep brand mapping centralized. Map only known upstream defaults such as `New API` and `/logo.png` to `hemaAPI` assets; preserve administrator-configured branding.
+- Preserve upstream project attribution, package metadata, licenses, import paths, and repository identity. User-facing Hema branding belongs in the adapter/presentation layer.
+- The visual reference for Hema user-facing pages is:
+  `/Users/hemasir/Documents/New project 3/sites/main-sub2/worktrees/sub2api-v0.1.178-main/frontend/src`
+- The current Hema stylesheet entry is `web/src/styles/hema-user.css`. Extend it carefully instead of scattering Hema overrides across upstream stylesheets.
+
+### Upgrade workflow
+
+- Before an upstream upgrade, identify Hema-owned files and record upstream conflicts; do not resolve conflicts by overwriting upstream route, auth, API, or store changes.
+- After an upstream upgrade, revalidate adapters against changed component props and DOM structure, then run affected tests, frontend typecheck, lint/format checks, and the production build.
+- Browser-check the affected flows at desktop and mobile widths, including loading, error, disabled, validation, and redirect states. Visual fidelity alone is not sufficient.
+- Keep Hema changes small and reviewable so they can be reapplied or conflict-resolved during future upstream releases.
+
+### Current Hema identity
+
+- User-facing brand: `hemaAPI`
+- Login statement: `世界不是线性外推，做博弈中的重要变量`
+- Brand adapter: `web/src/lib/brand-adapter.ts`
+- Brand asset: `web/public/hemaapi-mark.svg`
+- Login presentation wrapper: `web/src/features/auth/auth-layout.tsx`
+- Sign-in business integration: `web/src/features/auth/sign-in/index.tsx`
+- Shared internal presentation slots: `web/src/components/layout/components/section-page-layout.tsx`
+- Upgrade and deployment checklist: `docs/hema-ui-adaptation.md`
+
 ## Internationalization (i18n)
 
 ### Backend (`i18n/`)

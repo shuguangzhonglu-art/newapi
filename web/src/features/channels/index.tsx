@@ -86,7 +86,10 @@ export function Channels() {
 
   return (
     <ChannelsProvider>
-      <SectionPageLayout fixedContent>
+      <SectionPageLayout
+        fixedContent
+        className='hema-admin-page hema-data-page hema-channels-page'
+      >
         <SectionPageLayout.Title>
           <span className='flex min-w-0 items-center gap-2'>
             <span className='truncate'>{t('Channels')}</span>

@@ -57,7 +57,7 @@ export function LegalDocument({
 
   if (isLoading) {
     return (
-      <PublicLayout>
+      <PublicLayout className='hema-legal-page'>
         <div className='mx-auto flex max-w-4xl flex-col gap-4 py-12'>
           <Skeleton className='h-8 w-[45%]' />
           <Skeleton className='h-4 w-full' />
@@ -70,7 +70,7 @@ export function LegalDocument({
 
   if (!success || !hasContent) {
     return (
-      <PublicLayout>
+      <PublicLayout className='hema-legal-page'>
         <div className='mx-auto max-w-2xl py-12'>
           <Card className='border-dashed'>
             <CardHeader className='flex flex-row items-center gap-4'>
@@ -92,7 +92,7 @@ export function LegalDocument({
 
   if (isUrl) {
     return (
-      <PublicLayout>
+      <PublicLayout className='hema-legal-page'>
         <div className='mx-auto max-w-2xl py-12'>
           <Card>
             <CardHeader>
@@ -123,7 +123,10 @@ export function LegalDocument({
   }
 
   return (
-    <PublicLayout showMainContainer={!contentIsHtml}>
+    <PublicLayout
+      showMainContainer={!contentIsHtml}
+      className='hema-legal-page'
+    >
       {contentIsHtml ? (
         <RichContent mode='html' htmlVariant='isolated' content={rawContent} />
       ) : (

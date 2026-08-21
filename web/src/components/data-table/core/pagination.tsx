@@ -59,6 +59,7 @@ export function DataTablePagination<TData>({
 
   return (
     <div
+      data-slot='data-table-pagination'
       className={cn(
         '@container/pagination flex min-w-0 items-center justify-end overflow-clip'
       )}

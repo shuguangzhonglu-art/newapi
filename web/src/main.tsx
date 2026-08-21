@@ -29,6 +29,7 @@ import ReactDOM from 'react-dom/client'
 import { toast } from 'sonner'
 
 import { getStatus } from '@/lib/api'
+import { adaptSystemLogo, adaptSystemName } from '@/lib/brand-adapter'
 import { installBuildMetadata } from '@/lib/build-metadata'
 import { applyFaviconToDom } from '@/lib/dom-utils'
 import '@/lib/dayjs'
@@ -117,20 +118,22 @@ if (!rootElement) {
 ;(function initSystemBranding() {
   try {
     if (typeof window === 'undefined' || typeof document === 'undefined') return
-    const apply = (name: string) => {
-      document.title = name
+    const apply = (name?: unknown, logo?: unknown) => {
+      const displayName = adaptSystemName(name)
+      document.title = displayName
       const metaTitle = document.querySelector(
         'meta[name="title"]'
       ) as HTMLMetaElement | null
-      if (metaTitle) metaTitle.setAttribute('content', name)
+      if (metaTitle) metaTitle.setAttribute('content', displayName)
+      applyFaviconToDom(adaptSystemLogo(logo))
     }
+    apply()
     // Cache-first
     try {
       const saved = localStorage.getItem('status')
       if (saved) {
         const s = JSON.parse(saved)
-        if (s?.system_name) apply(s.system_name)
-        if (s?.logo) applyFaviconToDom(s.logo)
+        apply(s?.system_name, s?.logo)
       }
     } catch {
       /* empty */
@@ -138,15 +141,14 @@ if (!rootElement) {
     // Background refresh
     getStatus()
       .then((s) => {
+        apply(s?.system_name, s?.logo)
         if (s?.system_name) {
-          apply(s.system_name as string)
           try {
             localStorage.setItem('status', JSON.stringify(s))
           } catch {
             /* empty */
           }
         }
-        if (s?.logo) applyFaviconToDom(s.logo as string)
       })
       .catch(() => {
         /* empty */

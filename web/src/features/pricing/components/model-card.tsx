@@ -196,7 +196,7 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
   return (
     <div
       className={cn(
-        'group relative flex flex-col rounded-xl border p-3 transition-colors sm:p-5',
+        'hema-model-card group relative flex flex-col rounded-xl border p-3 transition-colors sm:p-5',
         'hover:bg-muted/20'
       )}
     >

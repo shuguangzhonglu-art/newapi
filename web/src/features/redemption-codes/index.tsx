@@ -29,7 +29,10 @@ export function Redemptions() {
   const { t } = useTranslation()
   return (
     <RedemptionsProvider>
-      <SectionPageLayout fixedContent>
+      <SectionPageLayout
+        fixedContent
+        className='hema-admin-page hema-data-page hema-redemptions-page'
+      >
         <SectionPageLayout.Title>
           {t('Redemption Codes')}
         </SectionPageLayout.Title>

@@ -1,0 +1,2588 @@
+/*
+ * Hema UI theme adapter.
+ *
+ * This keeps new-api's existing component system and applies the visual
+ * language used by the hemaAPI user surface: a pale green canvas, ink-like
+ * typography, olive signal color, hairline rules, and square controls.
+ */
+
+.hema-user-shell,
+.hema-public-shell,
+.hema-error-page,
+body:has(.hema-user-shell),
+body:has(.hema-public-shell),
+body:has(.hema-auth-layout) {
+  --hema-bg: #edf0e6;
+  --hema-surface: #f7f8f3;
+  --hema-surface-strong: #ffffff;
+  --hema-ink: #17241d;
+  --hema-muted: #667267;
+  --hema-signal: #526d00;
+  --hema-signal-soft: rgba(82, 109, 0, 0.09);
+  --hema-line: rgba(56, 76, 54, 0.2);
+  --hema-danger: #a43f35;
+
+  --background: var(--hema-bg);
+  --foreground: var(--hema-ink);
+  --card: var(--hema-surface);
+  --card-foreground: var(--hema-ink);
+  --popover: var(--hema-surface-strong);
+  --popover-foreground: var(--hema-ink);
+  --primary: var(--hema-signal);
+  --primary-foreground: var(--hema-surface-strong);
+  --secondary: color-mix(in srgb, var(--hema-surface) 72%, var(--hema-bg));
+  --secondary-foreground: var(--hema-ink);
+  --muted: color-mix(in srgb, var(--hema-bg) 72%, var(--hema-surface));
+  --muted-foreground: var(--hema-muted);
+  --accent: var(--hema-signal-soft);
+  --accent-foreground: var(--hema-ink);
+  --destructive: var(--hema-danger);
+  --destructive-foreground: #ffffff;
+  --success: var(--hema-signal);
+  --success-foreground: var(--hema-surface-strong);
+  --warning: #8b6f1e;
+  --warning-foreground: var(--hema-surface-strong);
+  --info: var(--hema-signal);
+  --info-foreground: var(--hema-surface-strong);
+  --neutral: var(--hema-muted);
+  --neutral-foreground: var(--hema-surface-strong);
+  --border: var(--hema-line);
+  --input: var(--hema-line);
+  --ring: var(--hema-signal);
+  --sidebar: var(--hema-bg);
+  --sidebar-foreground: var(--hema-ink);
+  --sidebar-primary: var(--hema-signal);
+  --sidebar-primary-foreground: var(--hema-surface-strong);
+  --sidebar-accent: var(--hema-signal-soft);
+  --sidebar-accent-foreground: var(--hema-ink);
+  --sidebar-border: var(--hema-line);
+  --sidebar-ring: var(--hema-signal);
+  --skeleton-base: color-mix(in srgb, var(--hema-bg) 76%, var(--hema-surface));
+  --skeleton-highlight: color-mix(
+    in srgb,
+    var(--hema-surface-strong) 74%,
+    var(--hema-bg)
+  );
+  --table-row: var(--hema-surface);
+  --table-header: color-mix(in srgb, var(--hema-bg) 66%, var(--hema-surface));
+  --table-header-hover: var(--hema-signal-soft);
+  --radius: 0.25rem;
+
+  min-height: 100%;
+  background: var(--hema-bg);
+  color: var(--hema-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.dark .hema-user-shell,
+.dark .hema-public-shell,
+.dark .hema-error-page,
+.dark body:has(.hema-user-shell),
+.dark body:has(.hema-public-shell),
+.dark body:has(.hema-auth-layout) {
+  --hema-bg: #101812;
+  --hema-surface: #151f19;
+  --hema-surface-strong: #19261e;
+  --hema-ink: #edf0e6;
+  --hema-muted: #9aa79b;
+  --hema-signal: #a4b85a;
+  --hema-signal-soft: rgba(164, 184, 90, 0.1);
+  --hema-line: rgba(203, 216, 195, 0.16);
+  --hema-danger: #d77b70;
+}
+
+.hema-error-page {
+  position: relative;
+  display: grid;
+  min-height: 100dvh;
+  overflow: hidden;
+  background-color: var(--hema-bg);
+  background-image:
+    linear-gradient(
+      color-mix(in srgb, var(--hema-signal) 5%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--hema-signal) 5%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 4rem 4rem;
+  color: var(--hema-ink);
+}
+
+.hema-error-page::before {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(32rem, 76vw);
+  aspect-ratio: 1;
+  border: 1px solid color-mix(in srgb, var(--hema-signal) 24%, transparent);
+  border-radius: 50%;
+  content: '';
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.hema-error-page > div {
+  position: relative;
+  z-index: 1;
+  max-width: 42rem;
+  padding: 2rem;
+}
+
+.hema-error-page h1 {
+  color: var(--hema-signal);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 5rem;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.hema-error-page p {
+  max-width: 58ch;
+  color: var(--hema-muted);
+  line-height: 1.65;
+}
+
+.hema-error-page [data-slot='button'] {
+  border-radius: 2px;
+  box-shadow: none;
+}
+
+.hema-error-page [data-slot='button'][data-variant='default'] {
+  border: 1px solid var(--hema-ink);
+  background: var(--hema-ink);
+  color: var(--hema-bg);
+}
+
+.hema-error-page [data-slot='button'][data-variant='outline'] {
+  border-color: var(--hema-line);
+  background: var(--hema-surface);
+  color: var(--hema-ink);
+}
+
+.hema-error-page [data-slot='button']:hover {
+  border-color: var(--hema-signal);
+  background: var(--hema-signal);
+  color: var(--hema-surface-strong);
+}
+
+.hema-error-page :focus-visible {
+  outline: 2px solid var(--hema-signal);
+  outline-offset: 2px;
+}
+
+body:has(.hema-user-shell),
+body:has(.hema-public-shell) {
+  background: var(--hema-bg, #edf0e6);
+  color: var(--hema-ink, #17241d);
+}
+
+.dark body:has(.hema-user-shell),
+.dark body:has(.hema-public-shell) {
+  background: #101812;
+  color: #edf0e6;
+}
+
+.hema-user-shell,
+.hema-public-shell,
+.hema-user-shell *,
+.hema-public-shell * {
+  letter-spacing: 0;
+}
+
+.hema-user-shell main,
+.hema-public-shell main {
+  color: var(--hema-ink);
+}
+
+.hema-user-shell main,
+.hema-public-shell main,
+.hema-user-shell [data-slot='sidebar-inset'],
+.hema-public-shell [data-slot='sidebar-inset'] {
+  background-color: var(--hema-bg);
+}
+
+.hema-user-shell:has(.hema-dashboard) main {
+  background-image:
+    linear-gradient(
+      color-mix(in srgb, var(--hema-signal) 4%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--hema-signal) 4%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 4rem 4rem;
+}
+
+/* Keep the shell technical and quiet: no floating glass cards or gradients. */
+.hema-user-shell [data-slot='card'],
+.hema-public-shell [data-slot='card'],
+.hema-user-shell [data-slot='sidebar-inner'],
+.hema-public-shell [data-slot='sidebar-inner'] {
+  border-color: var(--hema-line);
+  border-radius: 4px;
+  background: var(--hema-surface);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.hema-user-shell [data-slot='sidebar-inner'],
+.hema-public-shell [data-slot='sidebar-inner'] {
+  border-radius: 0;
+}
+
+.hema-user-shell [data-slot='sidebar-inner'] {
+  background: color-mix(in srgb, var(--hema-bg) 92%, white 8%);
+}
+
+.dark .hema-user-shell [data-slot='sidebar-inner'] {
+  background: var(--hema-bg);
+}
+
+.hema-user-shell [data-slot='sidebar-container'],
+.hema-public-shell [data-slot='sidebar-container'] {
+  border-color: var(--hema-line);
+}
+
+.hema-user-shell [data-slot='sidebar-header'],
+.hema-public-shell [data-slot='sidebar-header'],
+.hema-user-shell [data-slot='sidebar-footer'],
+.hema-public-shell [data-slot='sidebar-footer'] {
+  border-color: var(--hema-line);
+}
+
+.hema-user-shell [data-slot='sidebar-group-label'],
+.hema-public-shell [data-slot='sidebar-group-label'] {
+  color: var(--hema-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.hema-user-shell [data-slot='sidebar-menu-button'],
+.hema-public-shell [data-slot='sidebar-menu-button'] {
+  position: relative;
+  min-height: 2.25rem;
+  border-radius: 2px;
+  color: var(--hema-muted);
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    transform 120ms ease;
+}
+
+.hema-user-shell [data-slot='sidebar-menu-button']:hover,
+.hema-public-shell [data-slot='sidebar-menu-button']:hover {
+  background: var(--hema-signal-soft);
+  color: var(--hema-ink);
+}
+
+.hema-user-shell [data-slot='sidebar-menu-button'][data-active='true'],
+.hema-public-shell [data-slot='sidebar-menu-button'][data-active='true'] {
+  background: transparent;
+  color: var(--hema-ink);
+  font-weight: 600;
+}
+
+.hema-user-shell [data-slot='sidebar-menu-button'][data-active='true']::before,
+.hema-public-shell
+  [data-slot='sidebar-menu-button'][data-active='true']::before {
+  position: absolute;
+  inset-block: 0.5rem;
+  left: 0.25rem;
+  width: 2px;
+  background: var(--hema-signal);
+  content: '';
+}
+
+.hema-user-shell [data-slot='sidebar-menu-button'] svg,
+.hema-public-shell [data-slot='sidebar-menu-button'] svg {
+  color: var(--hema-signal);
+}
+
+.hema-user-shell [data-slot='sidebar-menu-badge'],
+.hema-public-shell [data-slot='sidebar-menu-badge'] {
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--hema-signal);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.58rem;
+}
+
+.hema-user-shell [data-slot='app-header'],
+.hema-public-shell [data-slot='app-header'] {
+  border-color: var(--hema-line);
+  background: color-mix(in srgb, var(--hema-bg) 92%, transparent);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.hema-user-shell [data-slot='app-header'] h1,
+.hema-public-shell [data-slot='app-header'] h1,
+.hema-user-shell [data-slot='app-header'] [class*='text-foreground'],
+.hema-public-shell [data-slot='app-header'] [class*='text-foreground'] {
+  color: var(--hema-ink);
+}
+
+.hema-user-shell [data-slot='app-header'] button,
+.hema-public-shell [data-slot='app-header'] button,
+.hema-user-shell [data-slot='app-header'] a,
+.hema-public-shell [data-slot='app-header'] a {
+  border-radius: 2px;
+}
+
+.hema-user-shell [data-slot='sidebar-menu-button'][data-size='lg'],
+.hema-public-shell [data-slot='sidebar-menu-button'][data-size='lg'] {
+  min-height: 3.5rem;
+  border-bottom: 1px solid var(--hema-line);
+  border-radius: 0;
+}
+
+.hema-user-shell [data-slot='sidebar-menu-button'][data-size='lg'] img,
+.hema-public-shell [data-slot='sidebar-menu-button'][data-size='lg'] img {
+  border-radius: 2px;
+  background: var(--hema-ink);
+}
+
+.hema-user-shell [data-slot='sidebar-menu-button'][data-size='lg'] span,
+.hema-public-shell [data-slot='sidebar-menu-button'][data-size='lg'] span {
+  color: var(--hema-ink);
+}
+
+.hema-user-shell
+  [data-slot='sidebar-menu-button'][data-size='lg']
+  span:last-child,
+.hema-public-shell
+  [data-slot='sidebar-menu-button'][data-size='lg']
+  span:last-child {
+  color: var(--hema-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.58rem;
+}
+
+.hema-user-shell [data-slot='card-title'],
+.hema-public-shell [data-slot='card-title'],
+.hema-user-shell h1,
+.hema-public-shell h1,
+.hema-user-shell h2,
+.hema-public-shell h2,
+.hema-user-shell h3,
+.hema-public-shell h3 {
+  color: var(--hema-ink);
+  letter-spacing: 0;
+}
+
+.hema-user-shell [data-slot='card-description'],
+.hema-public-shell [data-slot='card-description'],
+.hema-user-shell .text-muted-foreground,
+.hema-public-shell .text-muted-foreground {
+  color: var(--hema-muted);
+}
+
+.hema-user-shell [data-slot='card-header'],
+.hema-public-shell [data-slot='card-header'],
+.hema-user-shell [data-slot='card-footer'],
+.hema-public-shell [data-slot='card-footer'] {
+  border-color: var(--hema-line);
+}
+
+.hema-user-shell [data-slot='button'],
+.hema-public-shell [data-slot='button'],
+.hema-user-shell button,
+.hema-public-shell button {
+  border-radius: 2px;
+  box-shadow: none;
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease,
+    transform 120ms ease;
+}
+
+.hema-user-shell [data-slot='button']:active,
+.hema-public-shell [data-slot='button']:active,
+.hema-user-shell button:active,
+.hema-public-shell button:active {
+  transform: translateY(1px);
+}
+
+.hema-user-shell [data-slot='button'][data-variant='default'],
+.hema-public-shell [data-slot='button'][data-variant='default'] {
+  border: 1px solid var(--hema-ink);
+  background: var(--hema-ink);
+  color: var(--hema-bg);
+}
+
+.hema-user-shell [data-slot='button'][data-variant='default']:hover,
+.hema-public-shell [data-slot='button'][data-variant='default']:hover {
+  border-color: var(--hema-signal);
+  background: var(--hema-signal);
+  color: var(--hema-surface-strong);
+}
+
+.hema-user-shell [data-slot='button'][data-variant='outline'],
+.hema-public-shell [data-slot='button'][data-variant='outline'],
+.hema-user-shell [data-slot='button'][data-variant='ghost'],
+.hema-public-shell [data-slot='button'][data-variant='ghost'] {
+  border-color: var(--hema-line);
+  background: transparent;
+  color: var(--hema-ink);
+}
+
+.hema-user-shell [data-slot='button'][data-variant='outline']:hover,
+.hema-public-shell [data-slot='button'][data-variant='outline']:hover,
+.hema-user-shell [data-slot='button'][data-variant='ghost']:hover,
+.hema-public-shell [data-slot='button'][data-variant='ghost']:hover {
+  border-color: var(--hema-signal);
+  background: var(--hema-signal-soft);
+}
+
+.hema-user-shell input,
+.hema-public-shell input,
+.hema-user-shell textarea,
+.hema-public-shell textarea,
+.hema-user-shell select,
+.hema-public-shell select,
+.hema-user-shell [data-slot='select-trigger'],
+.hema-public-shell [data-slot='select-trigger'] {
+  border-color: var(--hema-line);
+  border-radius: 2px;
+  background: var(--hema-surface-strong);
+  color: var(--hema-ink);
+  box-shadow: none;
+}
+
+.hema-user-shell input:focus,
+.hema-public-shell input:focus,
+.hema-user-shell textarea:focus,
+.hema-public-shell textarea:focus,
+.hema-user-shell select:focus,
+.hema-public-shell select:focus,
+.hema-user-shell [data-slot='select-trigger']:focus-visible,
+.hema-public-shell [data-slot='select-trigger']:focus-visible {
+  border-color: var(--hema-signal);
+  box-shadow: 0 0 0 2px var(--hema-signal-soft);
+}
+
+.hema-user-shell [data-slot='table'],
+.hema-public-shell [data-slot='table'] {
+  background: transparent;
+}
+
+.hema-user-shell [data-slot='table-header'],
+.hema-public-shell [data-slot='table-header'] {
+  background: var(--table-header);
+  color: var(--hema-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.hema-user-shell [data-slot='table-row'],
+.hema-public-shell [data-slot='table-row'] {
+  border-color: var(--hema-line);
+}
+
+.hema-user-shell [data-slot='table-row']:hover,
+.hema-public-shell [data-slot='table-row']:hover {
+  background: var(--hema-signal-soft);
+}
+
+.hema-user-shell [data-slot='badge'],
+.hema-public-shell [data-slot='badge'] {
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  background: transparent;
+}
+
+.hema-user-shell [data-slot='dialog-content'],
+.hema-public-shell [data-slot='dialog-content'],
+.hema-user-shell [data-slot='popover-content'],
+.hema-public-shell [data-slot='popover-content'],
+.hema-user-shell [data-slot='sheet-content'],
+.hema-public-shell [data-slot='sheet-content'] {
+  border-color: var(--hema-line);
+  border-radius: 4px;
+  background: var(--hema-surface-strong);
+  box-shadow: 0 18px 48px rgba(23, 36, 29, 0.13);
+}
+
+.dark .hema-user-shell [data-slot='dialog-content'],
+.dark .hema-public-shell [data-slot='dialog-content'],
+.dark .hema-user-shell [data-slot='popover-content'],
+.dark .hema-public-shell [data-slot='popover-content'],
+.dark .hema-user-shell [data-slot='sheet-content'],
+.dark .hema-public-shell [data-slot='sheet-content'] {
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24);
+}
+
+.hema-user-shell .rounded-xl,
+.hema-public-shell .rounded-xl,
+.hema-user-shell .rounded-2xl,
+.hema-public-shell .rounded-2xl,
+.hema-user-shell .rounded-3xl,
+.hema-public-shell .rounded-3xl {
+  border-radius: 4px;
+}
+
+.hema-user-shell .rounded-lg,
+.hema-public-shell .rounded-lg {
+  border-radius: 3px;
+}
+
+.hema-user-shell .shadow,
+.hema-public-shell .shadow,
+.hema-user-shell .shadow-sm,
+.hema-public-shell .shadow-sm,
+.hema-user-shell .shadow-md,
+.hema-public-shell .shadow-md,
+.hema-user-shell .shadow-lg,
+.hema-public-shell .shadow-lg,
+.hema-user-shell .shadow-xl,
+.hema-public-shell .shadow-xl,
+.hema-user-shell .shadow-2xl,
+.hema-public-shell .shadow-2xl {
+  box-shadow: none;
+}
+
+.hema-user-shell .bg-gradient-to-r,
+.hema-public-shell .bg-gradient-to-r,
+.hema-user-shell .bg-gradient-to-br,
+.hema-public-shell .bg-gradient-to-br,
+.hema-user-shell .bg-gradient-to-b,
+.hema-public-shell .bg-gradient-to-b {
+  background-image: none;
+}
+
+.hema-user-shell :focus-visible,
+.hema-public-shell :focus-visible {
+  outline-color: var(--hema-signal);
+  outline-offset: 2px;
+}
+
+/* Shared authenticated page chrome. These selectors sit on the existing
+ * SectionPageLayout slots, so feature routes keep their upstream behavior. */
+.hema-user-shell .hema-section-page {
+  isolation: isolate;
+}
+
+.hema-user-shell .hema-section-page-header {
+  position: relative;
+  border-bottom: 1px solid var(--hema-line);
+  background: color-mix(in srgb, var(--hema-bg) 94%, transparent);
+}
+
+.hema-user-shell .hema-section-page-header::after {
+  position: absolute;
+  right: 1rem;
+  bottom: -1px;
+  width: clamp(2.5rem, 8vw, 7rem);
+  height: 1px;
+  background: var(--hema-signal);
+  content: '';
+}
+
+.hema-user-shell .hema-section-page-title {
+  color: var(--hema-ink);
+  font-size: 1.375rem;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.hema-user-shell .hema-section-page-breadcrumb,
+.hema-user-shell .hema-section-page-actions {
+  color: var(--hema-muted);
+}
+
+.hema-user-shell .hema-section-page-content {
+  scrollbar-gutter: stable;
+}
+
+.hema-user-shell .hema-section-page-footer {
+  border-color: var(--hema-line);
+  background: var(--hema-surface);
+}
+
+/* Dense operational primitives shared by keys, logs, models and admin pages. */
+.hema-user-shell [data-slot='table-container'] {
+  border: 1px solid var(--hema-line);
+  border-radius: 4px;
+  background: var(--hema-surface);
+  scrollbar-gutter: stable;
+}
+
+.hema-user-shell
+  :is([data-slot='table-container'], [data-slot='data-table-scroll-area']) {
+  container-type: inline-size;
+}
+
+.hema-user-shell [data-slot='data-table-empty-viewport'] {
+  position: sticky;
+  left: 0;
+  width: 100cqw;
+  min-width: 0;
+  white-space: normal;
+}
+
+.hema-user-shell [data-slot='table-head'] {
+  height: 2.5rem;
+  color: var(--hema-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.625rem;
+  font-weight: 600;
+}
+
+.hema-user-shell [data-slot='table-cell'] {
+  color: var(--hema-ink);
+}
+
+.hema-user-shell [data-slot='tabs-list'] {
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--hema-line);
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.hema-user-shell [data-slot='tabs-trigger'] {
+  min-height: 2.25rem;
+  border-radius: 0;
+  color: var(--hema-muted);
+}
+
+.hema-user-shell [data-slot='tabs-trigger'][data-active] {
+  background: transparent;
+  color: var(--hema-ink);
+  box-shadow: none;
+}
+
+.hema-user-shell [data-slot='tabs-trigger'][data-active]::after {
+  background: var(--hema-signal);
+  opacity: 1;
+}
+
+.hema-user-shell [data-slot='pagination-link'] {
+  border-radius: 2px;
+  color: var(--hema-muted);
+}
+
+.hema-user-shell [data-slot='pagination-link'][aria-current='page'] {
+  border-color: var(--hema-signal);
+  background: var(--hema-signal-soft);
+  color: var(--hema-ink);
+}
+
+.hema-user-shell [data-slot='empty'] {
+  border-color: var(--hema-line);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--hema-surface) 76%, transparent);
+}
+
+.hema-user-shell [data-slot='empty-icon'][data-variant='icon'] {
+  border: 1px solid var(--hema-line);
+  border-radius: 2px;
+  background: var(--hema-ink);
+  color: var(--hema-bg);
+}
+
+.hema-user-shell [data-slot='empty-title'] {
+  color: var(--hema-ink);
+}
+
+.hema-user-shell [data-slot='empty-description'] {
+  color: var(--hema-muted);
+}
+
+.hema-user-shell [data-slot='skeleton'] {
+  border-radius: 2px;
+}
+
+.hema-user-shell [data-slot='progress-track'] {
+  border-radius: 0;
+  background: color-mix(in srgb, var(--hema-line) 72%, transparent);
+}
+
+.hema-user-shell [data-slot='progress-indicator'] {
+  border-radius: 0;
+  background: var(--hema-signal);
+}
+
+.hema-user-shell [data-slot='alert'] {
+  border-color: var(--hema-line);
+  border-radius: 3px;
+  background: var(--hema-surface);
+  box-shadow: none;
+}
+
+/* Shared control metadata makes the theme independent from Tailwind utility
+ * details while leaving each control's behavior and state machine untouched. */
+.hema-user-shell [data-slot='button'][data-variant='secondary'],
+.hema-public-shell [data-slot='button'][data-variant='secondary'] {
+  border: 1px solid var(--hema-line);
+  background: var(--hema-surface);
+  color: var(--hema-ink);
+}
+
+.hema-user-shell [data-slot='button'][data-variant='secondary']:hover,
+.hema-public-shell [data-slot='button'][data-variant='secondary']:hover {
+  border-color: var(--hema-signal);
+  background: var(--hema-signal-soft);
+}
+
+.hema-user-shell [data-slot='button'][data-variant='destructive'],
+.hema-public-shell [data-slot='button'][data-variant='destructive'] {
+  border: 1px solid var(--hema-danger);
+  background: transparent;
+  color: var(--hema-danger);
+}
+
+.hema-user-shell [data-slot='button'][data-variant='destructive']:hover,
+.hema-public-shell [data-slot='button'][data-variant='destructive']:hover {
+  background: var(--hema-danger);
+  color: #ffffff;
+}
+
+.hema-user-shell [data-slot='button'][data-variant='link'],
+.hema-public-shell [data-slot='button'][data-variant='link'] {
+  color: var(--hema-signal);
+}
+
+.hema-user-shell [data-slot='checkbox'],
+.hema-public-shell [data-slot='checkbox'],
+.hema-user-shell [data-slot='radio-group-item'],
+.hema-public-shell [data-slot='radio-group-item'] {
+  border-color: var(--hema-line);
+  border-radius: 2px;
+  background: var(--hema-surface-strong);
+}
+
+.hema-user-shell [data-slot='checkbox'][data-checked],
+.hema-public-shell [data-slot='checkbox'][data-checked],
+.hema-user-shell [data-slot='radio-group-item'][data-checked],
+.hema-public-shell [data-slot='radio-group-item'][data-checked] {
+  border-color: var(--hema-signal);
+  background: var(--hema-signal);
+  color: var(--hema-surface-strong);
+}
+
+.hema-user-shell [data-slot='switch'],
+.hema-public-shell [data-slot='switch'] {
+  border: 1px solid var(--hema-line);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--hema-line) 65%, transparent);
+}
+
+.hema-user-shell [data-slot='switch'][data-checked],
+.hema-public-shell [data-slot='switch'][data-checked] {
+  border-color: var(--hema-signal);
+  background: var(--hema-signal);
+}
+
+.hema-user-shell [data-slot='switch-thumb'],
+.hema-public-shell [data-slot='switch-thumb'] {
+  border-radius: 1px;
+}
+
+.hema-user-shell [data-slot='separator'],
+.hema-public-shell [data-slot='separator'] {
+  background: var(--hema-line);
+}
+
+.hema-user-shell :is([data-slot='field-label'], [data-slot='field-legend']),
+.hema-public-shell :is([data-slot='field-label'], [data-slot='field-legend']),
+.hema-user-shell :is([data-slot='form-label'], [data-slot='label']),
+.hema-public-shell :is([data-slot='form-label'], [data-slot='label']) {
+  color: var(--hema-ink);
+}
+
+.hema-user-shell
+  :is([data-slot='field-description'], [data-slot='form-description']),
+.hema-public-shell
+  :is([data-slot='field-description'], [data-slot='form-description']),
+.hema-user-shell [data-slot='item-description'],
+.hema-public-shell [data-slot='item-description'] {
+  color: var(--hema-muted);
+}
+
+.hema-user-shell [data-slot='input-group'],
+.hema-public-shell [data-slot='input-group'],
+.hema-user-shell [data-slot='native-select'],
+.hema-public-shell [data-slot='native-select'] {
+  border-color: var(--hema-line);
+  border-radius: 2px;
+  background: var(--hema-surface-strong);
+  box-shadow: none;
+}
+
+.hema-user-shell [data-slot='toggle'],
+.hema-public-shell [data-slot='toggle'],
+.hema-user-shell [data-slot='toggle-group-item'],
+.hema-public-shell [data-slot='toggle-group-item'] {
+  border-radius: 2px;
+  color: var(--hema-muted);
+}
+
+.hema-user-shell [data-slot='toggle'][data-pressed],
+.hema-public-shell [data-slot='toggle'][data-pressed],
+.hema-user-shell [data-slot='toggle-group-item'][data-pressed],
+.hema-public-shell [data-slot='toggle-group-item'][data-pressed] {
+  background: var(--hema-signal-soft);
+  color: var(--hema-ink);
+}
+
+.hema-user-shell [data-slot='slider-track'],
+.hema-public-shell [data-slot='slider-track'] {
+  border-radius: 0;
+  background: var(--hema-line);
+}
+
+.hema-user-shell [data-slot='slider-range'],
+.hema-public-shell [data-slot='slider-range'] {
+  border-radius: 0;
+  background: var(--hema-signal);
+}
+
+.hema-user-shell [data-slot='slider-thumb'],
+.hema-public-shell [data-slot='slider-thumb'] {
+  border-color: var(--hema-signal);
+  border-radius: 2px;
+  background: var(--hema-surface-strong);
+  box-shadow: none;
+}
+
+.hema-user-shell [data-slot='accordion-item'],
+.hema-public-shell [data-slot='accordion-item'],
+.hema-user-shell [data-slot='item'],
+.hema-public-shell [data-slot='item'] {
+  border-color: var(--hema-line);
+  border-radius: 3px;
+}
+
+.hema-user-shell [data-slot='accordion-trigger'],
+.hema-public-shell [data-slot='accordion-trigger'] {
+  color: var(--hema-ink);
+}
+
+.hema-user-shell [data-slot='kbd'],
+.hema-public-shell [data-slot='kbd'] {
+  border: 1px solid var(--hema-line);
+  border-radius: 2px;
+  background: var(--hema-surface);
+  color: var(--hema-muted);
+  box-shadow: none;
+}
+
+.hema-user-shell :is(code, pre),
+.hema-public-shell :is(code, pre) {
+  border-color: var(--hema-line);
+  border-radius: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Operational list pages mirror sub2's workbar/table/footer rhythm. */
+.hema-user-shell [data-slot='data-table-page'] {
+  --data-table-card-bg: var(--hema-surface);
+}
+
+.hema-user-shell [data-slot='data-table-toolbar'] {
+  min-height: 2.75rem;
+  padding-bottom: 0.625rem;
+  border-bottom: 1px solid var(--hema-line);
+}
+
+.hema-user-shell [data-slot='data-table-toolbar'] [data-slot='input'] {
+  min-height: 2.25rem;
+}
+
+.hema-user-shell [data-slot='data-table-card'] {
+  border-color: var(--hema-line);
+  border-radius: 3px;
+  background: var(--hema-surface);
+  box-shadow: none;
+}
+
+.hema-user-shell [data-slot='data-table-card']:hover {
+  border-color: color-mix(in srgb, var(--hema-signal) 48%, var(--hema-line));
+  background: var(--hema-signal-soft);
+}
+
+.hema-user-shell [data-slot='data-table-pagination'] {
+  color: var(--hema-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.hema-user-shell [data-slot='data-table-pagination'] [data-slot='button'] {
+  border-radius: 2px;
+}
+
+/* Profile and wallet retain their upstream workflows but share the same
+ * ledger-like surface hierarchy as the sub2 user workspace. */
+.hema-user-shell :is(.hema-profile-page, .hema-wallet-page) [data-slot='card'] {
+  border-color: var(--hema-line);
+  border-radius: 4px;
+  background: var(--hema-surface);
+  box-shadow: none;
+}
+
+.hema-user-shell
+  :is(.hema-profile-page, .hema-wallet-page)
+  [data-slot='card-header'] {
+  background: color-mix(in srgb, var(--hema-bg) 46%, var(--hema-surface));
+}
+
+.hema-user-shell
+  :is(.hema-profile-page, .hema-wallet-page)
+  :is(.divide-x, .divide-y)
+  > * {
+  border-color: var(--hema-line);
+}
+
+.hema-user-shell
+  :is(.hema-profile-page, .hema-wallet-page)
+  :is(.font-mono, [class*='tabular-nums']) {
+  color: var(--hema-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.hema-user-shell .hema-profile-page [data-slot='avatar'],
+.hema-user-shell .hema-profile-page [data-slot='avatar-fallback'] {
+  border-radius: 3px;
+}
+
+.hema-user-shell :is(.hema-profile-page, .hema-wallet-page) .bg-muted\/20,
+.hema-user-shell :is(.hema-profile-page, .hema-wallet-page) .bg-muted\/30 {
+  background: color-mix(in srgb, var(--hema-bg) 60%, var(--hema-surface));
+}
+
+/* Administrator pages intentionally use the same visual grammar as the user
+ * workspace; role boundaries and configuration behavior remain upstream. */
+.hema-user-shell .hema-admin-page [data-slot='card'] {
+  border-color: var(--hema-line);
+  border-radius: 4px;
+  background: var(--hema-surface);
+  box-shadow: none;
+}
+
+.hema-user-shell .hema-admin-page [data-slot='card-header'] {
+  border-color: var(--hema-line);
+  background: color-mix(in srgb, var(--hema-bg) 46%, var(--hema-surface));
+}
+
+.hema-user-shell .hema-admin-page [data-slot='field-group'] {
+  gap: 1rem;
+}
+
+.hema-user-shell .hema-admin-page [data-slot='field'] {
+  border-color: var(--hema-line);
+}
+
+.hema-user-shell .hema-settings-page [data-slot='tabs-list'] {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--hema-bg);
+}
+
+.hema-user-shell .hema-admin-page [data-slot='admin-info-panel'] {
+  border: 1px solid var(--hema-line);
+  border-radius: 3px;
+  background: var(--hema-signal-soft);
+  color: var(--hema-ink);
+  box-shadow: none;
+}
+
+.hema-user-shell .hema-admin-page [data-slot='admin-info-code'] {
+  border: 1px solid color-mix(in srgb, var(--hema-signal) 20%, var(--hema-line));
+  border-radius: 2px;
+  background: color-mix(
+    in srgb,
+    var(--hema-surface-strong) 72%,
+    var(--hema-signal-soft)
+  );
+  color: var(--hema-ink);
+}
+
+.hema-user-shell .hema-settings-page [class*='before:rounded-xl']::before {
+  border-radius: 4px;
+}
+
+/* Dashboard overview keeps the upstream data and interactions while replacing
+ * its multicolor marketing treatment with the quieter sub2 control surface. */
+.hema-user-shell .hema-dashboard {
+  --overview-accent-1: var(--hema-signal);
+  --overview-accent-2: color-mix(
+    in srgb,
+    var(--hema-signal) 72%,
+    var(--hema-muted)
+  );
+  --overview-accent-3: color-mix(
+    in srgb,
+    var(--hema-signal) 48%,
+    var(--hema-ink)
+  );
+}
+
+.hema-user-shell .hema-dashboard :is(.bg-card, [data-slot='card']) {
+  border-color: var(--hema-line);
+  border-radius: 4px;
+  background-color: var(--hema-surface);
+  box-shadow: none;
+}
+
+.hema-user-shell .hema-dashboard :is(.shadow-xs, .shadow-sm) {
+  box-shadow: none;
+}
+
+.hema-user-shell
+  .hema-dashboard
+  :is([class*='bg-[radial-gradient'], [class*='bg-[linear-gradient']) {
+  background-image: none;
+}
+
+.hema-user-shell .hema-dashboard [class*='backdrop-blur'] {
+  backdrop-filter: none;
+}
+
+.hema-user-shell .hema-dashboard [class*='bg-chart-'] {
+  background-color: var(--hema-signal-soft);
+}
+
+.hema-user-shell .hema-dashboard [class*='text-chart-'] {
+  color: var(--hema-signal);
+}
+
+.hema-user-shell .hema-dashboard [class*='tracking-wider'] {
+  color: var(--hema-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.625rem;
+}
+
+.hema-user-shell .hema-dashboard pre,
+.hema-user-shell .hema-dashboard code,
+.hema-user-shell .hema-dashboard .font-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Less frequent primitives still appear in authentication, key management,
+ * logs, and administrator forms. Scope them from body so the same contract
+ * reaches both in-tree controls and Base UI portals. */
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  :is([data-slot='field-error'], [data-slot='form-message']) {
+  color: var(--hema-danger);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  :is(
+    input,
+    textarea,
+    [data-slot='select-trigger'],
+    [data-slot='input-group'],
+    [data-slot='native-select']
+  )[aria-invalid='true'],
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  :is([data-slot='input-group'], [data-slot='input-otp-group']):has(
+    [aria-invalid='true']
+  ) {
+  border-color: var(--hema-danger);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--hema-danger) 13%, transparent);
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  [data-slot='input-otp-group'] {
+  border-radius: 2px;
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  [data-slot='input-otp-slot'] {
+  border-color: var(--hema-line);
+  border-radius: 0;
+  background: var(--hema-surface-strong);
+  color: var(--hema-ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  box-shadow: none;
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  [data-slot='input-otp-group']
+  > [data-slot='input-otp-slot']:first-child {
+  border-radius: 2px 0 0 2px;
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  [data-slot='input-otp-group']
+  > [data-slot='input-otp-slot']:last-child {
+  border-radius: 0 2px 2px 0;
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  [data-slot='input-otp-slot'][data-active='true'] {
+  z-index: 1;
+  border-color: var(--hema-signal);
+  box-shadow: 0 0 0 2px var(--hema-signal-soft);
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  [data-slot='input-otp-separator'] {
+  color: var(--hema-muted);
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  [data-slot='calendar'] {
+  --cell-radius: 2px;
+
+  border-radius: 3px;
+  background: transparent;
+  color: var(--hema-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  [data-slot='calendar']
+  [data-slot='button'] {
+  border-radius: 2px;
+  box-shadow: none;
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  [data-slot='calendar']
+  [data-day]:is(
+    [data-selected-single='true'],
+    [data-range-start='true'],
+    [data-range-end='true']
+  ) {
+  background: var(--hema-signal);
+  color: var(--hema-surface-strong);
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  [data-slot='scroll-area-scrollbar'] {
+  background: transparent;
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  [data-slot='scroll-area-thumb'] {
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--hema-signal) 34%, var(--hema-line));
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  [data-slot='scroll-area-scrollbar']:hover
+  [data-slot='scroll-area-thumb'] {
+  background: var(--hema-signal);
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  [data-slot='status-badge'].rounded-4xl {
+  border: 1px solid color-mix(in srgb, currentColor 24%, transparent);
+  border-radius: 2px;
+  background: var(--hema-surface-strong);
+  box-shadow: none;
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  [data-slot='global-auto-order-chip'] {
+  border-color: var(--hema-line);
+  border-radius: 2px;
+  background: var(--hema-surface);
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  [data-slot='global-auto-order-index'] {
+  border-radius: 1px;
+  background: var(--hema-signal-soft);
+  color: var(--hema-signal);
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  [data-slot='alert-dialog-media'] {
+  border-radius: 2px;
+  background: var(--hema-signal-soft);
+  color: var(--hema-signal);
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  :is([data-slot='dialog-close'], [data-slot='sheet-close']) {
+  border-radius: 2px;
+  color: var(--hema-muted);
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  :is([data-slot='dialog-close'], [data-slot='sheet-close']):hover {
+  background: var(--hema-signal-soft);
+  color: var(--hema-ink);
+}
+
+/* Base UI renders overlays and menus in document.body. The active Hema shell
+ * on the page supplies scope without changing primitive or feature logic. */
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  :is(
+    [data-slot='dialog-overlay'],
+    [data-slot='alert-dialog-overlay'],
+    [data-slot='sheet-overlay'],
+    [data-slot='drawer-overlay']
+  ) {
+  background: color-mix(in srgb, var(--hema-ink) 44%, transparent);
+  backdrop-filter: blur(2px);
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  :is(
+    [data-slot='dialog-content'],
+    [data-slot='alert-dialog-content'],
+    [data-slot='popover-content'],
+    [data-slot='dropdown-menu-content'],
+    [data-slot='dropdown-menu-sub-content'],
+    [data-slot='context-menu-content'],
+    [data-slot='context-menu-sub-content'],
+    [data-slot='menubar-content'],
+    [data-slot='menubar-sub-content'],
+    [data-slot='select-content'],
+    [data-slot='combobox-content'],
+    [data-slot='hover-card-content'],
+    [data-slot='sheet-content'],
+    [data-slot='drawer-content']
+  ) {
+  border: 1px solid var(--hema-line);
+  border-radius: 4px;
+  background: var(--hema-surface-strong);
+  color: var(--hema-ink);
+  box-shadow: 0 18px 48px rgba(23, 36, 29, 0.13);
+}
+
+.dark
+  body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  :is(
+    [data-slot='dialog-content'],
+    [data-slot='alert-dialog-content'],
+    [data-slot='popover-content'],
+    [data-slot='dropdown-menu-content'],
+    [data-slot='dropdown-menu-sub-content'],
+    [data-slot='context-menu-content'],
+    [data-slot='context-menu-sub-content'],
+    [data-slot='menubar-content'],
+    [data-slot='menubar-sub-content'],
+    [data-slot='select-content'],
+    [data-slot='combobox-content'],
+    [data-slot='hover-card-content'],
+    [data-slot='sheet-content'],
+    [data-slot='drawer-content']
+  ) {
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24);
+}
+
+body:has(.hema-user-shell) [data-slot='sidebar'][data-mobile='true'] {
+  background: color-mix(in srgb, var(--hema-bg) 92%, white 8%);
+  box-shadow: 18px 0 48px rgba(23, 36, 29, 0.14);
+}
+
+.dark body:has(.hema-user-shell) [data-slot='sidebar'][data-mobile='true'] {
+  background: var(--hema-bg);
+  box-shadow: 18px 0 48px rgba(0, 0, 0, 0.24);
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  :is(
+    [data-slot='dialog-footer'],
+    [data-slot='alert-dialog-footer'],
+    [data-slot='sheet-footer'],
+    [data-slot='drawer-footer']
+  ) {
+  border-color: var(--hema-line);
+  border-radius: 0;
+  background: var(--hema-surface);
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  :is(
+    [data-slot='dialog-title'],
+    [data-slot='alert-dialog-title'],
+    [data-slot='sheet-title'],
+    [data-slot='drawer-title'],
+    [data-slot='popover-title']
+  ) {
+  color: var(--hema-ink);
+  font-weight: 650;
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  :is(
+    [data-slot='dialog-description'],
+    [data-slot='alert-dialog-description'],
+    [data-slot='sheet-description'],
+    [data-slot='drawer-description'],
+    [data-slot='popover-description']
+  ) {
+  color: var(--hema-muted);
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  :where(
+    [data-slot='dialog-content'],
+    [data-slot='alert-dialog-content'],
+    [data-slot='popover-content'],
+    [data-slot='sheet-content'],
+    [data-slot='drawer-content']
+  )
+  :is(
+    input,
+    textarea,
+    select,
+    [data-slot='select-trigger'],
+    [data-slot='input-group'],
+    [data-slot='native-select']
+  ) {
+  border-color: var(--hema-line);
+  border-radius: 2px;
+  background: var(--hema-surface-strong);
+  color: var(--hema-ink);
+  box-shadow: none;
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  :where(
+    [data-slot='dialog-content'],
+    [data-slot='alert-dialog-content'],
+    [data-slot='popover-content'],
+    [data-slot='sheet-content'],
+    [data-slot='drawer-content']
+  )
+  [data-slot='button'] {
+  border-radius: 2px;
+  box-shadow: none;
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  :where(
+    [data-slot='dialog-content'],
+    [data-slot='alert-dialog-content'],
+    [data-slot='popover-content'],
+    [data-slot='sheet-content'],
+    [data-slot='drawer-content']
+  )
+  [data-slot='button'][data-variant='default'] {
+  border: 1px solid var(--hema-ink);
+  background: var(--hema-ink);
+  color: var(--hema-bg);
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  :where(
+    [data-slot='dialog-content'],
+    [data-slot='alert-dialog-content'],
+    [data-slot='popover-content'],
+    [data-slot='sheet-content'],
+    [data-slot='drawer-content']
+  )
+  [data-slot='button'][data-variant='default']:hover {
+  border-color: var(--hema-signal);
+  background: var(--hema-signal);
+  color: var(--hema-surface-strong);
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  :where(
+    [data-slot='dialog-content'],
+    [data-slot='alert-dialog-content'],
+    [data-slot='popover-content'],
+    [data-slot='sheet-content'],
+    [data-slot='drawer-content']
+  )
+  [data-slot='button'][data-variant='destructive'] {
+  border: 1px solid var(--hema-danger);
+  background: transparent;
+  color: var(--hema-danger);
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  :where(
+    [data-slot='dialog-content'],
+    [data-slot='alert-dialog-content'],
+    [data-slot='popover-content'],
+    [data-slot='sheet-content'],
+    [data-slot='drawer-content']
+  )
+  [data-slot='button'][data-variant='destructive']:hover {
+  background: var(--hema-danger);
+  color: #ffffff;
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  :is(
+    [data-slot='dropdown-menu-item'],
+    [data-slot='dropdown-menu-sub-trigger'],
+    [data-slot='dropdown-menu-checkbox-item'],
+    [data-slot='dropdown-menu-radio-item'],
+    [data-slot='context-menu-item'],
+    [data-slot='context-menu-sub-trigger'],
+    [data-slot='context-menu-checkbox-item'],
+    [data-slot='context-menu-radio-item'],
+    [data-slot='menubar-item'],
+    [data-slot='menubar-sub-trigger'],
+    [data-slot='menubar-checkbox-item'],
+    [data-slot='menubar-radio-item'],
+    [data-slot='select-item'],
+    [data-slot='combobox-item'],
+    [data-slot='command-item']
+  ) {
+  border-radius: 2px;
+  color: var(--hema-ink);
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  :is(
+    [data-slot='dropdown-menu-item'],
+    [data-slot='dropdown-menu-sub-trigger'],
+    [data-slot='dropdown-menu-checkbox-item'],
+    [data-slot='dropdown-menu-radio-item'],
+    [data-slot='context-menu-item'],
+    [data-slot='context-menu-sub-trigger'],
+    [data-slot='context-menu-checkbox-item'],
+    [data-slot='context-menu-radio-item'],
+    [data-slot='menubar-item'],
+    [data-slot='menubar-sub-trigger'],
+    [data-slot='menubar-checkbox-item'],
+    [data-slot='menubar-radio-item'],
+    [data-slot='select-item'],
+    [data-slot='combobox-item'],
+    [data-slot='command-item']
+  )[data-highlighted] {
+  background: var(--hema-signal-soft);
+  color: var(--hema-ink);
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  [data-slot='command-item'][data-selected] {
+  background: var(--hema-signal-soft);
+  color: var(--hema-ink);
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  :is(
+    [data-slot='dropdown-menu-label'],
+    [data-slot='context-menu-label'],
+    [data-slot='menubar-label'],
+    [data-slot='select-label'],
+    [data-slot='combobox-label']
+  ) {
+  color: var(--hema-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0;
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  :is(
+    [data-slot='dropdown-menu-separator'],
+    [data-slot='context-menu-separator'],
+    [data-slot='menubar-separator'],
+    [data-slot='select-separator'],
+    [data-slot='combobox-separator'],
+    [data-slot='command-separator']
+  ) {
+  background: var(--hema-line);
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  :is(
+    [data-slot='dropdown-menu-shortcut'],
+    [data-slot='context-menu-shortcut'],
+    [data-slot='menubar-shortcut'],
+    [data-slot='command-shortcut']
+  ) {
+  color: var(--hema-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  [data-slot='command'] {
+  border-radius: 3px;
+  background: var(--hema-surface-strong);
+  color: var(--hema-ink);
+}
+
+/* Command uses important radius utilities upstream. A base-layer important
+ * override wins that utility layer without changing the shared primitive. */
+@layer base {
+  body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+    [data-slot='dialog-content']:has([data-slot='command']),
+  body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+    [data-slot='command'] {
+    border-radius: 3px !important;
+  }
+
+  body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+    [data-slot='command-item'] {
+    border-radius: 2px !important;
+  }
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  [data-slot='command-input-wrapper'] {
+  border-bottom: 1px solid var(--hema-line);
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  :is(
+    [data-slot='command-empty'],
+    [data-slot='combobox-empty'],
+    [data-slot='select-scroll-up-button'],
+    [data-slot='select-scroll-down-button']
+  ) {
+  color: var(--hema-muted);
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  [data-slot='tooltip-content'] {
+  border: 0;
+  border-radius: 2px;
+  background: var(--hema-ink);
+  color: var(--hema-bg);
+  box-shadow: none;
+}
+
+body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
+  [data-sonner-toast] {
+  border-radius: 2px;
+  box-shadow: 0 12px 32px rgba(23, 36, 29, 0.14);
+}
+
+@media (max-width: 767px) {
+  .hema-user-shell:has(.hema-dashboard) main {
+    background-size: 3rem 3rem;
+  }
+
+  .hema-user-shell .hema-section-page-header::after {
+    right: 0.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hema-user-shell *,
+  .hema-public-shell * {
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
+}
+
+/* Public catalog, ranking, legal, setup and authenticated tool surfaces. The
+ * feature modules keep their upstream data flow; these page hooks only shape
+ * presentation so future upstream merges stay reviewable. */
+.hema-public-shell [data-slot='app-header'] {
+  border: 1px solid transparent;
+  border-bottom-color: var(--hema-line);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--hema-bg) 94%, transparent);
+  box-shadow: none;
+  backdrop-filter: blur(14px);
+}
+
+.hema-public-shell [data-slot='app-header'] a[aria-current='page'] {
+  color: var(--hema-ink);
+}
+
+.hema-public-shell [data-slot='app-header'] a[aria-current='page']::after {
+  display: block;
+  width: 100%;
+  height: 1px;
+  margin-top: 0.25rem;
+  background: var(--hema-signal);
+  content: '';
+}
+
+.hema-pricing-page > .relative > [aria-hidden],
+.hema-rankings-page > .relative > [aria-hidden] {
+  display: none;
+}
+
+.hema-catalog-content,
+.hema-rankings-content {
+  position: relative;
+  padding-top: 5.5rem;
+}
+
+.hema-catalog-content::before,
+.hema-rankings-content::before {
+  position: absolute;
+  top: 4rem;
+  right: clamp(0.75rem, 3vw, 2rem);
+  width: clamp(4rem, 10vw, 9rem);
+  height: 1px;
+  background: var(--hema-signal);
+  content: '';
+}
+
+.hema-catalog-hero,
+.hema-rankings-hero {
+  max-width: none;
+  border-bottom: 1px solid var(--hema-line);
+  text-align: left;
+}
+
+.hema-catalog-hero {
+  margin-bottom: 1.25rem;
+  padding-block: 1.5rem 1.75rem;
+}
+
+.hema-catalog-hero h1,
+.hema-rankings-hero h1 {
+  font-size: 2.75rem;
+  font-weight: 560;
+  line-height: 1.05;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+.hema-catalog-hero > p,
+.hema-rankings-hero p {
+  max-width: 65ch;
+  margin-right: 0;
+  margin-left: 0;
+  color: var(--hema-muted);
+  line-height: 1.65;
+}
+
+.hema-catalog-hero > div:last-child {
+  width: min(100%, 42rem);
+  margin-inline: 0;
+}
+
+.hema-pricing-sidebar,
+.hema-pricing-toolbar,
+.hema-model-card {
+  border-color: var(--hema-line);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--hema-surface) 88%, transparent);
+  box-shadow: none;
+}
+
+.hema-pricing-sidebar {
+  top: 5rem;
+  max-height: calc(100dvh - 6rem);
+}
+
+.hema-pricing-sidebar > div:first-child,
+.hema-pricing-toolbar {
+  border-bottom-color: var(--hema-line);
+}
+
+.hema-pricing-sidebar button,
+.hema-pricing-toolbar button,
+.hema-model-card button {
+  border-radius: 2px;
+}
+
+.hema-pricing-sidebar button[data-state='open'],
+.hema-pricing-sidebar button[aria-pressed='true'] {
+  border-color: var(--hema-signal);
+  background: var(--hema-signal-soft);
+  color: var(--hema-ink);
+}
+
+.hema-model-card {
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    transform 180ms ease;
+}
+
+.hema-model-card:hover {
+  border-color: color-mix(in srgb, var(--hema-signal) 58%, var(--hema-line));
+  background: var(--hema-surface-strong);
+  transform: translateY(-2px);
+}
+
+.hema-model-card h3,
+.hema-model-card .font-mono,
+.hema-model-details-page .font-mono,
+.hema-rankings-page .font-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+.hema-model-card > div:first-child > div:first-child > div:first-child {
+  border: 1px solid var(--hema-line);
+  border-radius: 2px;
+  background: var(--hema-bg);
+}
+
+.hema-catalog-page [data-slot='table-container'],
+.hema-catalog-page table {
+  border-color: var(--hema-line);
+  border-radius: 3px;
+  background: var(--hema-surface);
+}
+
+.hema-model-details-page main > div {
+  padding-block: 1.25rem 3rem;
+}
+
+.hema-model-details-page :is(section, [data-slot='card']) {
+  border-color: var(--hema-line);
+  border-radius: 3px;
+  box-shadow: none;
+}
+
+.hema-rankings-content {
+  gap: 1.25rem;
+}
+
+.hema-rankings-hero {
+  padding-block: 1.5rem 0;
+}
+
+.hema-rankings-hero > div:first-child {
+  padding-bottom: 1rem;
+}
+
+.hema-rankings-hero [role='tablist'] {
+  border-color: var(--hema-line);
+}
+
+.hema-rankings-hero [role='tab'] {
+  border-radius: 0;
+  color: var(--hema-muted);
+}
+
+.hema-rankings-hero [role='tab'][aria-selected='true'] {
+  color: var(--hema-ink);
+}
+
+.hema-rankings-hero [role='tab'] span[aria-hidden] {
+  border-radius: 0;
+  background: var(--hema-signal);
+}
+
+.hema-rankings-content section.bg-card,
+.hema-rankings-content div.bg-card,
+.hema-rankings-content > div:last-child {
+  border-color: var(--hema-line);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--hema-surface) 90%, transparent);
+  box-shadow: none;
+}
+
+.hema-rankings-content :is(header, .border-t, .border-b) {
+  border-color: var(--hema-line);
+}
+
+.hema-rankings-content h2 svg,
+.hema-rankings-content h3 svg {
+  color: var(--hema-signal);
+}
+
+.hema-about-page main,
+.hema-legal-page main {
+  min-height: 100dvh;
+  padding-top: 6rem;
+}
+
+.hema-about-page main > div,
+.hema-legal-page main > div {
+  border-color: var(--hema-line);
+}
+
+.hema-about-page .prose,
+.hema-legal-page .prose {
+  color: var(--hema-ink);
+}
+
+.hema-about-page .prose :is(a, strong),
+.hema-legal-page .prose :is(a, strong) {
+  color: var(--hema-signal);
+}
+
+.hema-about-page iframe {
+  min-height: 100dvh;
+  padding-top: 4rem;
+  background: var(--hema-bg);
+}
+
+.hema-setup-page {
+  min-height: 100dvh;
+  background-color: var(--hema-bg);
+  background-image:
+    linear-gradient(
+      color-mix(in srgb, var(--hema-signal) 4%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--hema-signal) 4%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 4rem 4rem;
+}
+
+.hema-setup-page > .container {
+  max-width: 68rem;
+}
+
+.hema-setup-page > .container > div:first-child img {
+  border: 1px solid var(--hema-line);
+  border-radius: 2px;
+  background: var(--hema-ink);
+  box-shadow: none;
+}
+
+.hema-setup-page > .container > div:first-child h1 {
+  font-size: 2rem;
+  font-weight: 560;
+}
+
+.hema-setup-page [data-slot='card'] {
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--hema-surface) 94%, transparent);
+}
+
+.hema-setup-page ol > li {
+  border-color: var(--hema-line);
+  border-radius: 2px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.hema-setup-page ol > li:has(> div > span.bg-primary) {
+  border-color: var(--hema-signal);
+  background: var(--hema-signal-soft);
+}
+
+.hema-setup-page ol > li > div > span {
+  border-radius: 1px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.hema-setup-page [data-slot='card-footer'] {
+  background: var(--hema-bg);
+}
+
+.hema-playground-shell,
+.hema-chat-page {
+  background-color: var(--hema-bg);
+  background-image:
+    linear-gradient(
+      color-mix(in srgb, var(--hema-signal) 4%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--hema-signal) 4%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 4rem 4rem;
+}
+
+.hema-playground-page > div:last-child {
+  border-top: 1px solid var(--hema-line);
+  background: color-mix(in srgb, var(--hema-bg) 94%, transparent);
+}
+
+.hema-playground-page [data-slot='prompt-input'],
+.hema-playground-page form,
+.hema-playground-page textarea {
+  border-color: var(--hema-line);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--hema-surface-strong) 90%, transparent);
+  box-shadow: none;
+}
+
+.hema-playground-page :is(.rounded-xl, .rounded-lg) {
+  border-radius: 3px;
+}
+
+.hema-chat-page:not(iframe) {
+  min-height: 100%;
+  color: var(--hema-ink);
+}
+
+@media (max-width: 767px) {
+  .hema-catalog-content,
+  .hema-rankings-content {
+    padding-top: 4.5rem;
+  }
+
+  .hema-catalog-content::before,
+  .hema-rankings-content::before {
+    top: 4rem;
+  }
+
+  .hema-catalog-hero h1,
+  .hema-rankings-hero h1 {
+    font-size: 2.125rem;
+  }
+
+  .hema-catalog-hero {
+    padding-block: 1rem 1.25rem;
+  }
+
+  .hema-model-card:hover {
+    transform: none;
+  }
+
+  .hema-setup-page {
+    padding-block: 4rem 1rem;
+  }
+
+  .hema-setup-page ol {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 479px) {
+  .hema-setup-page ol {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Bundled Hema home adapter. The iframe isolates the reference site's WebGL,
+ * document styles, and long-form archive from upstream React pages. */
+.hema-home-frame-shell,
+.hema-home-loading {
+  width: 100%;
+  min-height: 100dvh;
+  background: #edf0e6;
+}
+
+.hema-home-frame-shell {
+  overflow: hidden;
+}
+
+.hema-home-frame {
+  display: block;
+  width: 100%;
+  height: 100dvh;
+  border: 0;
+  background: #edf0e6;
+}
+
+.hema-home-loading {
+  display: grid;
+  place-items: center;
+}
+
+.hema-home-loading-bar {
+  position: relative;
+  display: block;
+  width: 2.125rem;
+  height: 2px;
+  overflow: hidden;
+  background: rgba(23, 60, 44, 0.16);
+}
+
+.hema-home-loading-bar::after {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0.875rem;
+  background: #526d00;
+  content: '';
+  animation: hema-home-loading 900ms ease-in-out infinite alternate;
+}
+
+@keyframes hema-home-loading {
+  to {
+    transform: translateX(1.25rem);
+  }
+}
+
+/* Authentication surface adapter. All auth flows stay in React and share this
+ * presentation without changing validation, redirects, or provider logic. */
+.hema-auth-layout {
+  --hema-bg: #edf0e6;
+  --hema-surface: #f7f8f3;
+  --hema-surface-strong: #ffffff;
+  --hema-ink: #17241d;
+  --hema-muted: #667267;
+  --hema-signal: #526d00;
+  --hema-line: rgba(56, 76, 54, 0.22);
+
+  position: relative;
+  display: flex;
+  min-height: 100dvh;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 1rem;
+  background:
+    radial-gradient(
+      circle at 74% 18%,
+      rgba(82, 109, 0, 0.13),
+      transparent 25rem
+    ),
+    radial-gradient(
+      circle at 12% 82%,
+      rgba(23, 36, 29, 0.08),
+      transparent 28rem
+    ),
+    var(--hema-bg);
+  color: var(--hema-ink);
+}
+
+.dark .hema-auth-layout {
+  --hema-bg: #101812;
+  --hema-surface: #151f19;
+  --hema-surface-strong: #19261e;
+  --hema-ink: #edf0e6;
+  --hema-muted: #9aa79b;
+  --hema-signal: #a4b85a;
+  --hema-line: rgba(203, 216, 195, 0.16);
+  background:
+    radial-gradient(
+      circle at 74% 18%,
+      rgba(164, 184, 90, 0.13),
+      transparent 25rem
+    ),
+    radial-gradient(circle at 12% 82%, rgba(5, 10, 7, 0.26), transparent 28rem),
+    var(--hema-bg);
+}
+
+.hema-auth-layout--home,
+.hema-auth-layout--default {
+  align-items: stretch;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.hema-auth-layout::before {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(56, 76, 54, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 76, 54, 0.09) 1px, transparent 1px);
+  background-size: 4rem 4rem;
+  content: '';
+  mask-image: radial-gradient(circle at center, black 0%, transparent 76%);
+  pointer-events: none;
+}
+
+.dark .hema-auth-layout::before {
+  background-image:
+    linear-gradient(rgba(203, 216, 195, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(203, 216, 195, 0.08) 1px, transparent 1px);
+}
+
+.hema-auth-noise,
+.hema-auth-scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hema-auth-noise {
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.85'/%3E%3C/svg%3E");
+}
+
+.dark .hema-auth-noise {
+  opacity: 0.035;
+}
+
+.hema-auth-scanlines {
+  opacity: 0.42;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(45, 62, 48, 0.035) 0,
+    rgba(45, 62, 48, 0.035) 1px,
+    rgba(255, 255, 255, 0.08) 2px,
+    rgba(255, 255, 255, 0.08) 4px
+  );
+}
+
+.hema-auth-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: min(100%, 1240px);
+  min-height: min(820px, calc(100dvh - 2rem));
+  margin: auto;
+  grid-template-columns: minmax(0, 1fr) minmax(390px, 0.56fr);
+  border: 1px solid var(--hema-line);
+  background: rgba(237, 240, 230, 0.62);
+  box-shadow: 18px 18px 0 rgba(82, 109, 0, 0.1);
+}
+
+.dark .hema-auth-grid {
+  box-shadow: 18px 18px 0 rgba(164, 184, 90, 0.08);
+}
+
+.hema-auth-story {
+  position: relative;
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  border-right: 1px solid var(--hema-line);
+}
+
+.hema-auth-story-top,
+.hema-auth-mobile-top,
+.hema-auth-panel-meta,
+.hema-auth-copyright {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hema-auth-story-top {
+  min-height: 68px;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 0 clamp(24px, 3vw, 42px);
+  border-bottom: 1px solid rgba(56, 76, 54, 0.16);
+}
+
+.hema-auth-brand,
+.hema-auth-system-state,
+.hema-auth-kicker,
+.hema-auth-panel-meta,
+.hema-auth-coordinates,
+.hema-auth-copyright {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.hema-auth-brand {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.625rem;
+  color: var(--hema-ink);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.hema-auth-brand:hover {
+  color: var(--hema-signal);
+}
+
+.hema-auth-brand-mark {
+  display: grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex: 0 0 auto;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--hema-line);
+  background: var(--hema-ink);
+  color: var(--hema-bg);
+}
+
+.hema-auth-system-state,
+.hema-auth-kicker,
+.hema-auth-panel-meta {
+  color: var(--hema-signal);
+  font-size: 0.625rem;
+}
+
+.hema-auth-story-copy {
+  position: relative;
+  z-index: 2;
+  width: min(560px, 68%);
+  padding: clamp(72px, 11vh, 118px) clamp(24px, 5vw, 70px) 0;
+}
+
+.hema-auth-kicker {
+  margin: 0 0 20px;
+}
+
+.hema-auth-story-copy h2 {
+  margin: 0;
+  color: var(--hema-signal);
+  font-size: 60px;
+  font-weight: 400;
+  line-height: 0.94;
+  text-wrap: balance;
+}
+
+@media (min-width: 1200px) {
+  .hema-auth-story-copy h2 {
+    font-size: 72px;
+  }
+}
+
+.hema-auth-story-copy p:last-child {
+  max-width: 34rem;
+  margin: 28px 0 0;
+  color: var(--hema-muted);
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.hema-auth-gravity {
+  position: absolute;
+  right: clamp(-150px, -8vw, -72px);
+  top: 130px;
+  width: 470px;
+  aspect-ratio: 1;
+}
+
+.hema-auth-orbit {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(82, 109, 0, 0.32);
+  border-radius: 50%;
+  animation: hema-auth-orbit-rotate 18s linear infinite;
+}
+
+.hema-auth-orbit--wide {
+  transform: rotate(-18deg) scaleX(1.28);
+}
+
+.hema-auth-orbit--tight {
+  inset: 86px;
+  border-color: rgba(23, 36, 29, 0.24);
+  animation-duration: 11s;
+  animation-direction: reverse;
+}
+
+.hema-auth-planet,
+.hema-auth-moon {
+  position: absolute;
+  display: block;
+  border: 1px solid var(--hema-signal);
+  background: var(--hema-bg);
+}
+
+.hema-auth-planet {
+  left: 50%;
+  top: -7px;
+  width: 14px;
+  aspect-ratio: 1;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.hema-auth-moon {
+  left: 50%;
+  bottom: -5px;
+  width: 10px;
+  aspect-ratio: 1;
+  background: var(--hema-signal);
+  transform: translateX(-50%);
+}
+
+.hema-auth-star {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 76px;
+  aspect-ratio: 1;
+  border: 1px solid var(--hema-signal);
+  background: var(--hema-ink);
+  box-shadow:
+    0 0 0 14px rgba(82, 109, 0, 0.07),
+    0 0 48px rgba(82, 109, 0, 0.28);
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.hema-auth-coordinates {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  display: grid;
+  gap: 5px;
+  color: color-mix(in srgb, var(--hema-muted) 72%, transparent);
+  font-size: 0.625rem;
+  text-align: right;
+}
+
+.hema-auth-panel {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(22px, 4vw, 44px);
+  background: rgba(247, 248, 239, 0.72);
+}
+
+.hema-auth-mobile-top {
+  display: none;
+  min-height: 48px;
+  margin-bottom: 1.25rem;
+}
+
+.hema-auth-panel-meta {
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.875rem;
+  border-bottom: 1px solid var(--hema-line);
+}
+
+.hema-auth-card {
+  border: 1px solid rgba(56, 76, 54, 0.26);
+  background: rgba(237, 240, 230, 0.72);
+  box-shadow: 10px 10px 0 rgba(82, 109, 0, 0.1);
+}
+
+.dark .hema-auth-card {
+  box-shadow: 10px 10px 0 rgba(164, 184, 90, 0.08);
+}
+
+.hema-auth-card > .w-full {
+  padding: clamp(22px, 3vw, 34px);
+}
+
+.hema-auth-register {
+  display: grid;
+  gap: 1.75rem;
+}
+
+.hema-auth-register-heading {
+  display: grid;
+  gap: 0.4rem;
+  text-align: center;
+}
+
+.hema-auth-register-heading h2 {
+  margin: 0;
+  color: var(--hema-ink);
+  font-size: 1.75rem;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.hema-auth-register-heading p,
+.hema-auth-account-switch {
+  margin: 0;
+  color: var(--hema-muted);
+  font-size: 0.875rem;
+}
+
+.hema-auth-register-form {
+  gap: 1.125rem;
+}
+
+.hema-auth-panel-footer {
+  margin-top: 1.75rem;
+  text-align: center;
+}
+
+.hema-auth-account-switch a {
+  color: var(--hema-signal);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.hema-auth-account-switch a:hover {
+  color: var(--hema-ink);
+}
+
+.hema-auth-card .space-y-8 {
+  gap: 1.75rem;
+}
+
+.hema-auth-card .space-y-8 > .space-y-2 {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.hema-auth-card .space-y-8 > .space-y-2 h2 {
+  color: var(--hema-ink);
+  font-size: 1.75rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-align: left;
+}
+
+.hema-auth-card .space-y-8 > .space-y-2 p {
+  color: var(--hema-muted);
+  font-size: 0.875rem;
+}
+
+.hema-auth-card label {
+  color: var(--hema-ink);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.hema-auth-card input,
+.hema-auth-card [data-slot='select-trigger'] {
+  min-height: 3.125rem;
+  border-color: var(--hema-line);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--hema-surface-strong) 60%, transparent);
+  color: var(--hema-ink);
+  box-shadow: none;
+}
+
+.hema-auth-card input:hover {
+  border-color: color-mix(in srgb, var(--hema-signal) 55%, var(--hema-line));
+}
+
+.hema-auth-card input:focus,
+.hema-auth-card [data-slot='select-trigger']:focus-visible {
+  border-color: var(--hema-signal);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--hema-signal) 13%, transparent);
+}
+
+.hema-auth-card input::placeholder {
+  color: color-mix(in srgb, var(--hema-muted) 76%, transparent);
+}
+
+.hema-auth-card [data-slot='button']:not(.absolute) {
+  min-height: 3.125rem;
+  border-radius: 0;
+  transition:
+    transform 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.hema-auth-card [data-slot='button'][type='submit'] {
+  border: 1px solid var(--hema-ink);
+  background: var(--hema-ink);
+  color: var(--hema-bg);
+  box-shadow: 7px 7px 0 rgba(82, 109, 0, 0.16);
+}
+
+.hema-auth-card [data-slot='button'][type='submit']:hover:not(:disabled) {
+  border-color: var(--hema-signal);
+  background: var(--hema-signal);
+  transform: translate(-2px, -2px);
+  box-shadow: 9px 9px 0 rgba(23, 36, 29, 0.13);
+}
+
+.hema-auth-card [data-slot='button']:not(.absolute):not([type='submit']) {
+  border-color: var(--hema-line);
+  background: transparent;
+  color: var(--hema-ink);
+}
+
+.hema-auth-card
+  [data-slot='button']:not(.absolute):not([type='submit']):hover:not(
+    :disabled
+  ) {
+  border-color: var(--hema-signal);
+  background: color-mix(in srgb, var(--hema-signal) 8%, transparent);
+}
+
+.hema-auth-card [data-slot='button']:not(.absolute):active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.hema-auth-card a {
+  color: var(--hema-signal);
+}
+
+.hema-auth-card a:hover {
+  color: var(--hema-ink);
+}
+
+.hema-auth-card [data-slot='checkbox'] {
+  border-color: var(--hema-line);
+  border-radius: 0;
+}
+
+.hema-auth-card [data-slot='checkbox'][data-state='checked'] {
+  border-color: var(--hema-signal);
+  background: var(--hema-signal);
+}
+
+.hema-auth-card [data-slot='dialog-content'],
+.hema-auth-card [data-slot='popover-content'] {
+  border-color: var(--hema-line);
+  border-radius: 2px;
+  background: var(--hema-surface-strong);
+}
+
+.hema-auth-card :focus-visible {
+  outline-color: var(--hema-signal);
+  outline-offset: 2px;
+}
+
+.hema-auth-copyright {
+  margin-top: 28px;
+  color: rgba(102, 114, 103, 0.78);
+  font-size: 10px;
+}
+
+@keyframes hema-auth-orbit-rotate {
+  from {
+    rotate: 0deg;
+  }
+
+  to {
+    rotate: 360deg;
+  }
+}
+
+@media (max-width: 1023px) {
+  .hema-auth-layout {
+    align-items: flex-start;
+    padding: 16px;
+  }
+
+  .hema-auth-grid {
+    min-height: calc(100dvh - 32px);
+    grid-template-columns: 1fr;
+    box-shadow: 10px 10px 0 rgba(82, 109, 0, 0.1);
+  }
+
+  .hema-auth-story {
+    display: none;
+  }
+
+  .hema-auth-panel {
+    min-height: calc(100dvh - 32px);
+    justify-content: flex-start;
+  }
+
+  .hema-auth-mobile-top {
+    display: flex;
+  }
+}
+
+@media (max-width: 520px) {
+  .hema-auth-layout {
+    padding: 0;
+  }
+
+  .hema-auth-grid {
+    min-height: 100dvh;
+    border-inline: 0;
+    box-shadow: none;
+  }
+
+  .hema-auth-panel {
+    min-height: 100dvh;
+    padding: 1.125rem;
+  }
+
+  .hema-auth-card {
+    box-shadow: 6px 6px 0 rgba(82, 109, 0, 0.1);
+  }
+
+  .hema-auth-panel-meta {
+    font-size: 0.5625rem;
+  }
+
+  .hema-auth-copyright {
+    display: grid;
+    justify-content: start;
+    gap: 0.375rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hema-home-loading-bar::after {
+    animation: none;
+  }
+
+  .hema-auth-orbit {
+    animation: none;
+  }
+
+  .hema-auth-card [data-slot='button']:not(.absolute) {
+    transition-duration: 1ms;
+  }
+}

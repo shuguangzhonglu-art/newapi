@@ -24,39 +24,112 @@ import { useSystemConfig } from '@/hooks/use-system-config'
 
 type AuthLayoutProps = {
   children: React.ReactNode
+  panelFooter?: React.ReactNode
+  variant?: 'default' | 'home'
 }
 
-export function AuthLayout({ children }: AuthLayoutProps) {
+export function AuthLayout({
+  children,
+  panelFooter,
+  variant = 'default',
+}: AuthLayoutProps) {
   const { t } = useTranslation()
   const { systemName, logo, loading } = useSystemConfig()
 
   return (
-    <div className='relative grid h-svh max-w-none'>
-      <Link
-        to='/'
-        className='absolute top-4 left-4 z-10 flex items-center gap-2 transition-opacity hover:opacity-80 sm:top-8 sm:left-8'
-      >
-        <div className='relative h-8 w-8'>
-          {loading ? (
-            <Skeleton className='absolute inset-0 rounded-full' />
-          ) : (
-            <img
-              src={logo}
-              alt={t('Logo')}
-              className='h-8 w-8 rounded-full object-cover'
-            />
-          )}
-        </div>
-        {loading ? (
-          <Skeleton className='h-6 w-24' />
-        ) : (
-          <h1 className='text-xl font-medium'>{systemName}</h1>
-        )}
-      </Link>
-      <div className='container flex items-center pt-16 sm:pt-0'>
-        <div className='mx-auto flex w-full flex-col justify-center space-y-2 px-4 py-8 sm:w-[480px] sm:p-8'>
-          {children}
-        </div>
+    <div className={`hema-auth-layout hema-auth-layout--${variant}`}>
+      <div className='hema-auth-noise' aria-hidden='true' />
+      <div className='hema-auth-scanlines' aria-hidden='true' />
+
+      <div className='hema-auth-grid'>
+        <section className='hema-auth-story'>
+          <div className='hema-auth-story-top'>
+            <Link to='/' className='hema-auth-brand' aria-label={t('Home')}>
+              <span className='hema-auth-brand-mark'>
+                {loading ? (
+                  <Skeleton className='h-full w-full rounded-none' />
+                ) : (
+                  <img
+                    src={logo}
+                    alt=''
+                    className='h-full w-full object-cover'
+                  />
+                )}
+              </span>
+              <span>{loading ? t('Loading') : systemName}</span>
+            </Link>
+            <span className='hema-auth-system-state' aria-hidden='true'>
+              GATEWAY / ONLINE
+            </span>
+          </div>
+
+          <div className='hema-auth-story-copy'>
+            <p className='hema-auth-kicker' aria-hidden='true'>
+              AUTH NODE 01
+            </p>
+            <h2>
+              {t('auth.homeStoryTitle', {
+                defaultValue: '世界不是线性外推，做博弈中的重要变量',
+              })}
+            </h2>
+          </div>
+
+          <div className='hema-auth-gravity' aria-hidden='true'>
+            <div className='hema-auth-orbit hema-auth-orbit--wide'>
+              <span className='hema-auth-planet' />
+            </div>
+            <div className='hema-auth-orbit hema-auth-orbit--tight'>
+              <span className='hema-auth-moon' />
+            </div>
+            <div className='hema-auth-star' />
+          </div>
+
+          <div className='hema-auth-coordinates' aria-hidden='true'>
+            <span>AZ 273.8</span>
+            <span>EL 036.2</span>
+            <span>RNG 08.42</span>
+          </div>
+        </section>
+
+        <section className='hema-auth-panel'>
+          <div className='hema-auth-mobile-top'>
+            <Link to='/' className='hema-auth-brand' aria-label={t('Home')}>
+              <span className='hema-auth-brand-mark'>
+                {loading ? (
+                  <Skeleton className='h-full w-full rounded-none' />
+                ) : (
+                  <img
+                    src={logo}
+                    alt=''
+                    className='h-full w-full object-cover'
+                  />
+                )}
+              </span>
+              <span>{loading ? t('Loading') : systemName}</span>
+            </Link>
+            <span className='hema-auth-system-state' aria-hidden='true'>
+              NODE 01
+            </span>
+          </div>
+
+          <div className='hema-auth-panel-meta' aria-hidden='true'>
+            <span>SECURE CHANNEL</span>
+            <span>TLS / ACTIVE</span>
+          </div>
+
+          <div className='hema-auth-card'>{children}</div>
+
+          {panelFooter ? (
+            <div className='hema-auth-panel-footer'>{panelFooter}</div>
+          ) : null}
+
+          <div className='hema-auth-copyright'>
+            <span>
+              &copy; {new Date().getFullYear()} {systemName}
+            </span>
+            <span>HEMA ACCESS SYSTEM</span>
+          </div>
+        </section>
       </div>
     </div>
   )

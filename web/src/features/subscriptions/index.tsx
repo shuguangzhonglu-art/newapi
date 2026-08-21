@@ -36,7 +36,10 @@ function SubscriptionsContent() {
 
   return (
     <>
-      <SectionPageLayout fixedContent>
+      <SectionPageLayout
+        fixedContent
+        className='hema-admin-page hema-data-page hema-subscriptions-page'
+      >
         <SectionPageLayout.Title>
           {t('Subscription Management')}
         </SectionPageLayout.Title>

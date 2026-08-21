@@ -28,7 +28,7 @@ export function SystemInfo() {
   const { t } = useTranslation()
 
   return (
-    <SectionPageLayout>
+    <SectionPageLayout className='hema-admin-page hema-system-info-page'>
       <SectionPageLayout.Title>
         <span className='inline-flex min-w-0 items-center gap-2'>
           <span className='truncate'>{t('System Info')}</span>

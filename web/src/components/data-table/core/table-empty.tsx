@@ -72,16 +72,18 @@ export function TableEmpty({
   return (
     <TableRow>
       <TableCell colSpan={colSpan} className='h-[400px] p-0'>
-        <Empty>
-          <EmptyHeader>
-            <EmptyMedia variant='icon'>
-              {icon || <Database className='size-6' />}
-            </EmptyMedia>
-            <EmptyTitle>{resolvedTitle}</EmptyTitle>
-            <EmptyDescription>{resolvedDescription}</EmptyDescription>
-          </EmptyHeader>
-          {children}
-        </Empty>
+        <div data-slot='data-table-empty-viewport'>
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant='icon'>
+                {icon || <Database className='size-6' />}
+              </EmptyMedia>
+              <EmptyTitle>{resolvedTitle}</EmptyTitle>
+              <EmptyDescription>{resolvedDescription}</EmptyDescription>
+            </EmptyHeader>
+            {children}
+          </Empty>
+        </div>
       </TableCell>
     </TableRow>
   )

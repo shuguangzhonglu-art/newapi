@@ -21,6 +21,7 @@
     "coverage",
     ".tanstack",
     ".eslintrc.cjs",
+    "public/hema-home/**",
     "**/routeTree.gen.ts",
     "src/routeTree.gen.ts"
   ]

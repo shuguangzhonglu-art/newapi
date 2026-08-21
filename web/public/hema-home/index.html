@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#edf0e6" />
+    <title>hemaAPI - AI API Infrastructure</title>
+    <link rel="stylesheet" href="./styles.css?v=20260729" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://esm.sh/three@0.170.0"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div class="boot" aria-live="polite">
+      <div class="boot-mark" aria-hidden="true"></div>
+      <p>INITIALIZING HEMA API</p>
+    </div>
+
+    <canvas id="scene" aria-label="可交互的人工智能人物地球"></canvas>
+    <div class="phosphor" aria-hidden="true"></div>
+    <div class="scanlines" aria-hidden="true"></div>
+    <div class="noise" aria-hidden="true"></div>
+    <div class="vignette" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="hemaAPI 主页">
+        <span class="brand-mark" aria-hidden="true"></span>
+        hemaAPI
+      </a>
+      <nav class="primary-nav" aria-label="主导航">
+        <a href="#system">能力</a>
+        <a href="#archive">知识网络</a>
+        <a class="nav-console" href="/dashboard?lang=zh" target="_top">API 控制台</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow">THE GRAVITY LAYER FOR AI</p>
+          <h1 id="hero-title">hema<span>API</span></h1>
+          <p class="hero-statement">让每一种 AI 能力<br />向一个接口汇聚。</p>
+          <p class="lead">统一连接领先模型、工具与工作流。一个密钥，一套调用方式，把 AI 真正接入产品。</p>
+          <div class="hero-actions">
+            <a class="primary-action" href="/keys?lang=zh" target="_top">开始调用 <span aria-hidden="true">→</span></a>
+            <a class="text-action" href="#archive">探索 AI 知识网络</a>
+          </div>
+        </div>
+
+        <div class="coordinates" aria-hidden="true">
+          <span>AZ 273.8</span>
+          <span>EL 036.2</span>
+          <span>RNG 08.42</span>
+        </div>
+      </section>
+
+      <section class="system" id="system" aria-labelledby="system-title">
+        <div class="integration-copy reveal" id="console">
+          <p class="section-kicker">CCS WORKSPACE NETWORK</p>
+          <h2 id="system-title">接入你的<br />AI 工作台</h2>
+          <p class="integration-lead">一次配置，让熟悉的工具直接调用 hemaAPI。</p>
+          <div class="service-promises" aria-label="服务承诺">
+            <div><span>01</span><strong>模型保真</strong></div>
+            <div><span>02</span><strong>随时可退</strong></div>
+          </div>
+          <div class="supported-models" aria-label="支持的模型">
+            <span>SUPPORTED MODELS</span>
+            <strong>ChatGPT</strong>
+            <strong>Kimi</strong>
+            <strong>Grok</strong>
+          </div>
+        </div>
+
+        <div class="integration-stage reveal" aria-label="支持的开发工具">
+          <div class="orbit orbit--outer" aria-hidden="true">
+            <span class="planet planet--terra"><i class="moon-orbit"></i></span>
+          </div>
+          <div class="orbit orbit--inner" aria-hidden="true">
+            <span class="planet planet--inner"></span>
+          </div>
+          <div class="ccs-core" aria-hidden="true"></div>
+          <a class="tool-node" href="./docs.html#codex"><span>01</span><strong>Codex</strong></a>
+          <a class="tool-node" href="./docs.html#workbuddy"><span>02</span><strong>WorkBuddy</strong></a>
+          <a class="tool-node" href="./docs.html#claude-code"><span>03</span><strong>Claude Code</strong></a>
+          <a class="tool-node" href="./docs.html#opencode"><span>04</span><strong>OpenCode</strong></a>
+          <a class="tool-node" href="./docs.html#openclaw"><span>05</span><strong>OpenClaw</strong></a>
+          <a class="tool-node" href="./docs.html#hermes"><span>06</span><strong>Hermes</strong></a>
+          <a class="tool-node" href="./docs.html#trae"><span>07</span><strong>TRAE</strong></a>
+          <a class="tool-node" href="./docs.html#cursor"><span>08</span><strong>Cursor</strong></a>
+        </div>
+      </section>
+
+      <section class="archive" id="archive" aria-labelledby="archive-title">
+        <div class="archive-heading reveal">
+          <p class="section-kicker">AI HUMAN INDEX</p>
+          <h2 id="archive-title">塑造人工智能的<br />50 位代表人物</h2>
+          <p>依据历史影响、技术贡献与公众知名度策展，不代表严格排名。</p>
+        </div>
+        <div class="people-grid" id="people-grid"></div>
+      </section>
+
+      <section class="projects" aria-labelledby="projects-title">
+        <div class="projects-heading reveal">
+          <p class="section-kicker">SYSTEM AND MODEL ARCHIVE</p>
+          <h2 id="projects-title">50 个改变<br />AI 进程的项目</h2>
+        </div>
+        <div class="project-stream" id="project-stream"></div>
+      </section>
+
+      <section class="papers" aria-labelledby="papers-title">
+        <div class="papers-heading reveal">
+          <p class="section-kicker">FOUNDATIONAL RESEARCH</p>
+          <h2 id="papers-title">50 篇重要论文<br />1943-2025</h2>
+          <p>包含正式论文、预印本与产生重大影响的公开技术报告，按年份排列。</p>
+        </div>
+        <div class="paper-timeline" id="paper-timeline"></div>
+      </section>
+
+      <section class="organizations" aria-labelledby="organizations-title">
+        <div class="organizations-heading reveal">
+          <p class="section-kicker">GLOBAL AI NODES</p>
+          <h2 id="organizations-title">十个关键组织</h2>
+          <p>公司与研究组织共同构成当代 AI 的算力、模型、产品和研究网络。</p>
+        </div>
+        <div class="organization-list" id="organization-list"></div>
+      </section>
+
+      <section class="closing" aria-labelledby="closing-title">
+        <div class="closing-line reveal" aria-hidden="true"></div>
+        <p class="reveal">BUILD WITH HEMA API</p>
+        <h2 id="closing-title" class="reveal">CONNECT.<br />CREATE.</h2>
+        <a class="enter reveal" href="#top">返回首页 <span aria-hidden="true">↑</span></a>
+      </section>
+    </main>
+
+    <dialog class="profile-dialog" id="profile-dialog" aria-labelledby="profile-name">
+      <div class="profile-dialog__header">
+        <span id="profile-number">01</span>
+        <button class="profile-close" type="button" aria-label="关闭人物介绍">&times;</button>
+      </div>
+      <div class="profile-dialog__body">
+        <p>AI HUMAN INDEX</p>
+        <h2 id="profile-name"></h2>
+        <h3 id="profile-role"></h3>
+        <p id="profile-bio"></p>
+      </div>
+    </dialog>
+
+    <noscript>此演示需要启用 JavaScript。</noscript>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

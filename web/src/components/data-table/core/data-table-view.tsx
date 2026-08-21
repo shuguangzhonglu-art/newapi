@@ -100,7 +100,10 @@ function UnifiedTableView<TData>({
   const tableSizing = getTableSizing(props)
 
   return (
-    <div className={props.tableContainerClassName}>
+    <div
+      data-slot='data-table-scroll-area'
+      className={props.tableContainerClassName}
+    >
       <Table className={props.tableClassName} style={tableSizing.style}>
         {tableSizing.colgroup}
         <DataTableHeader
@@ -137,6 +140,7 @@ function SplitHeaderTableView<TData>({
       )}
     >
       <div
+        data-slot='data-table-scroll-area'
         className={cn(
           'min-h-0 flex-1 overflow-auto',
           '**:data-[slot=table-header]:[--table-header-bg:var(--table-header)]',
@@ -296,7 +300,7 @@ function renderEmptyState<TData>(
     return (
       <TableRow>
         <TableCell colSpan={colSpan} className={props.emptyCellClassName}>
-          {props.emptyContent}
+          <div data-slot='data-table-empty-viewport'>{props.emptyContent}</div>
         </TableCell>
       </TableRow>
     )
