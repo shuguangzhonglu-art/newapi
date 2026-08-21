@@ -12,7 +12,7 @@ services:
   # 容器内监听 3000 端口，映射到宿主机 3000，内外统一
   # ==========================================================
   new-api:
-    image: calciumion/new-api:${VERSION}
+    image: ghcr.io/shuguangzhonglu-art/newapi:latest
     container_name: newapi-hybrid
     restart: always
     command: --log-dir /app/logs

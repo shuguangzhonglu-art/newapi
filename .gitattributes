@@ -11,6 +11,10 @@
 *.toml text eol=lf
 *.md text eol=lf
 
+# The deployment bundle is maintained with CRLF line endings; keep its diffs focused.
+/docker/newapi-hybrid/*.yml -text
+/docker/newapi-hybrid/*.md -text
+
 # JavaScript/TypeScript files
 *.js text eol=lf
 *.jsx text eol=lf

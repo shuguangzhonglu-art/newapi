@@ -24,7 +24,7 @@
 
 | 组件 | 镜像 | 部署位置 | 对外暴露 |
 |---|---|---|---|
-| new-api | `calciumion/new-api:latest` | 主程序机器（容器） | 是（3000） |
+| new-api | `ghcr.io/shuguangzhonglu-art/newapi:latest` | 主程序机器（容器） | 是（3000） |
 | redis | `redis:7-alpine` | 主程序机器（容器） | 否（仅内部） |
 | mysql | MySQL ≥ 5.7.8 | 外部独立服务器 | 是（仅放行主程序 IP） |
 
@@ -143,7 +143,6 @@ docker logs newapi-hybrid -f
 
 | 变量 | 说明 | 是否可改 |
 |---|---|---|
-| `VERSION` | 镜像版本标签，`latest` 或锁定具体版本 | 可改 |
 | `HOST_IP` | 监听地址，`0.0.0.0` 接受所有网卡 | 一般不动 |
 | `WEB_HTTP_PORT` | 宿主机对外端口 | 可改（改后同步防火墙） |
 | `SESSION_SECRET` | 用户登录态签名密钥，校验 Cookie 完整性 | **首次启动后禁止改** |
@@ -404,9 +403,6 @@ docker logs newapi-hybrid -f
 # ============================================================
 
 # ---------- 镜像 ----------
-# 镜像版本标签；生产环境建议锁定具体版本号而非 latest
-VERSION=latest
-
 # ---------- 网络 ----------
 # 监听地址，0.0.0.0 表示接受所有网卡的请求
 HOST_IP=0.0.0.0
@@ -457,7 +453,7 @@ services:
   # 容器内监听 3000 端口，映射到宿主机 3000，内外统一
   # ==========================================================
   new-api:
-    image: calciumion/new-api:${VERSION}
+    image: ghcr.io/shuguangzhonglu-art/newapi:latest
     container_name: newapi-hybrid
     restart: always
     command: --log-dir /app/logs
