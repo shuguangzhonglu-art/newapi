@@ -1,0 +1,82 @@
+# ============================================================
+# NewAPI Hybrid - 容器编排配置
+# 架构：主程序 + Redis 容器化，MySQL 外部独立部署
+# 拓扑：单节点主程序 + 本地 Redis，远程 MySQL
+# 访问：http://服务器IP:3000
+# ============================================================
+
+services:
+
+  # ==========================================================
+  # NewAPI 主应用
+  # 容器内监听 3000 端口，映射到宿主机 3000，内外统一
+  # ==========================================================
+  new-api:
+    image: calciumion/new-api:${VERSION}
+    container_name: newapi-hybrid
+    restart: always
+    command: --log-dir /app/logs
+    ports:
+      - "${HOST_IP}:${WEB_HTTP_PORT}:3000"
+    volumes:
+      - ${APP_PATH}/data:/data
+      - ${APP_PATH}/logs:/app/logs
+    environment:
+      # ---- 数据库连接（外部 MySQL） ----
+      # MYSQL_HOST / MYSQL_PWD 从 .env 读取，指向外部数据库服务器
+      # charset=utf8mb4：完整 Unicode 支持（含 emoji）
+      # parseTime=True：允许 Go 正确扫描 MySQL 的 DATETIME 类型
+      # loc=Local：时区与容器 TZ 保持一致
+      # timeout=5s：建连超时，防止网络抖动时连接无限等待
+      # readTimeout=30s：读超时，防止慢查询拖死连接
+      # writeTimeout=10s：写超时，防止批量写入卡死
+      - SQL_DSN=newapi:${MYSQL_PWD}@tcp(${MYSQL_HOST}:3306)/newapi?charset=utf8mb4&parseTime=True&loc=Local&timeout=5s&readTimeout=30s&writeTimeout=10s
+
+      # ---- Redis 连接（本地容器） ----
+      # 通过 Docker 内部网络连同机 Redis 容器，无密码
+      # Redis 未映射宿主机端口，仅同网络内容器可访问
+      - REDIS_CONN_STRING=redis://redis:6379/0
+
+      # ---- 安全密钥 ----
+      # 从 single 版迁移时必须与 single 版保持一致，否则已有用户全部掉线
+      - SESSION_SECRET=${SESSION_SECRET}
+      - CRYPTO_SECRET=${CRYPTO_SECRET}
+
+      # ---- 性能优化 ----
+      # 消费日志批量写入：请求完成后不立即 INSERT，攒批后一次性写入
+      # 效果：将 MySQL 写 QPS 降低约 90%，高并发场景下避免写入瓶颈
+      - BATCH_UPDATE_ENABLED=true
+
+      # ---- 错误日志 ----
+      # 开启后 NewAPI 会将错误详情写入日志文件，便于排查问题
+      - ERROR_LOG_ENABLED=true
+
+      # ---- 时区 ----
+      - TZ=Asia/Shanghai
+
+      # ---- 连接池（默认注释，量大时取消注释） ----
+      # SQL_MAX_IDLE_CONNS : 连接池保持的空闲连接数，官方默认 100
+      # SQL_MAX_OPEN_CONNS : 连接池最大打开连接数，官方默认 1000
+      # - SQL_MAX_IDLE_CONNS=100
+      # - SQL_MAX_OPEN_CONNS=1000
+
+    depends_on:
+      - redis
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/status | grep -q success"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================================
+  # Redis 7 (Alpine 轻量版) - 缓存 & 会话存储
+  # 持久化：默认开启 AOF，重启后数据可恢复
+  # 网络：未暴露宿主机端口，仅 Docker 内部网络可访问
+  # ==========================================================
+  redis:
+    image: redis:7-alpine
+    container_name: newapi-hybrid-redis
+    restart: always
+    volumes:
+      - ${APP_PATH}/redis_data:/data
