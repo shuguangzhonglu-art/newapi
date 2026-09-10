@@ -93,7 +93,7 @@ export function PerformanceOverview() {
   })
 
   const models = useMemo(
-    () => metricsQuery.data?.data.models ?? [],
+    () => metricsQuery.data?.data?.models ?? [],
     [metricsQuery.data]
   )
   const summary = useMemo(() => buildPerformanceSummary(models), [models])
