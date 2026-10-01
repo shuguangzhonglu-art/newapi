@@ -145,6 +145,14 @@
     </dialog>
 
     <noscript>此演示需要启用 JavaScript。</noscript>
+    <script>
+      // The 3D layer is optional. If its module or a browser capability fails,
+      // keep the regular homepage available instead of trapping navigation on
+      // the boot screen.
+      window.setTimeout(() => {
+        document.querySelector(".boot")?.classList.add("done");
+      }, 3000);
+    </script>
     <script type="module" src="./main.js"></script>
   </body>
 </html>
