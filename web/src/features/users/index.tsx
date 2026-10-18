@@ -32,7 +32,10 @@ function UsersContent() {
 
   return (
     <>
-      <SectionPageLayout fixedContent>
+      <SectionPageLayout
+        fixedContent
+        className='hema-admin-page hema-data-page hema-users-page'
+      >
         <SectionPageLayout.Title>{t('Users')}</SectionPageLayout.Title>
         <SectionPageLayout.Actions>
           <UsersPrimaryButtons />

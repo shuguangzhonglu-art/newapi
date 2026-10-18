@@ -1626,7 +1626,7 @@ export function ModelDetails() {
 
   if (isLoading) {
     return (
-      <PublicLayout>
+      <PublicLayout className='hema-model-details-page hema-catalog-page'>
         <div className='mx-auto max-w-5xl px-4 sm:px-6'>
           <Skeleton className='mb-4 h-5 w-16' />
           <div className='space-y-2'>
@@ -1651,7 +1651,7 @@ export function ModelDetails() {
 
   if (!model) {
     return (
-      <PublicLayout>
+      <PublicLayout className='hema-model-details-page hema-catalog-page'>
         <div className='mx-auto max-w-2xl px-4 text-center sm:px-6'>
           <h2 className='mb-1 text-base font-semibold'>
             {t('Model not found')}
@@ -1668,7 +1668,7 @@ export function ModelDetails() {
   }
 
   return (
-    <PublicLayout>
+    <PublicLayout className='hema-model-details-page hema-catalog-page'>
       <div className='mx-auto max-w-5xl px-4 sm:px-6'>
         <Button
           variant='ghost'

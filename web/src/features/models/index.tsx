@@ -122,6 +122,7 @@ function ModelsContent() {
     <>
       <SectionPageLayout
         fixedContent
+        className='hema-data-page hema-models-page'
         stackActionsOnMobile={activeSection === 'metadata'}
       >
         <SectionPageLayout.Title>{t(meta.titleKey)}</SectionPageLayout.Title>

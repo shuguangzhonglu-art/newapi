@@ -245,12 +245,12 @@ export function LogsFilterToolbar<TData>(props: LogsFilterToolbarProps<TData>) {
   return (
     <div
       className={cn(
-        'bg-card/50 rounded-lg border p-2.5 sm:p-3',
+        'bg-card/70 rounded-xl border p-3 shadow-sm sm:p-4',
         props.className
       )}
     >
       <div className='flex flex-wrap items-start gap-2'>
-        <div className='grid min-w-0 flex-1 grid-cols-1 gap-2 sm:grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]'>
+        <div className='grid min-w-0 flex-1 grid-cols-1 gap-2 sm:grid-cols-[minmax(15rem,1.6fr)_minmax(10rem,1fr)_minmax(9rem,0.8fr)_minmax(9rem,0.8fr)]'>
           {props.primaryFilters}
         </div>
         {advancedToggle && (
@@ -261,7 +261,7 @@ export function LogsFilterToolbar<TData>(props: LogsFilterToolbarProps<TData>) {
       </div>
 
       {advancedOpen && props.advancedFilters && (
-        <div className='mt-2 grid grid-cols-1 gap-2 sm:grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]'>
+        <div className='mt-3 grid grid-cols-1 gap-2 border-t border-border/50 pt-3 sm:grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]'>
           {props.advancedFilters}
         </div>
       )}

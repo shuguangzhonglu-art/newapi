@@ -284,7 +284,7 @@ export function Wallet(props: WalletProps) {
 
   return (
     <>
-      <SectionPageLayout>
+      <SectionPageLayout className='hema-wallet-page'>
         <SectionPageLayout.Title>{t('Wallet')}</SectionPageLayout.Title>
         <SectionPageLayout.Content>
           <div className='mx-auto flex w-full max-w-7xl flex-col gap-4 sm:gap-5'>

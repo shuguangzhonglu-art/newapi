@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#edf0e6" />
+    <link rel="icon" type="image/svg+xml" href="/hemaapi-mark.svg" />
+    <title>hemaAPI - 工具接入文档</title>
+    <link rel="stylesheet" href="./styles.css?v=20260730-14" />
+  </head>
+  <body class="docs-page">
+    <header class="topbar">
+      <a class="brand" href="./index.html" aria-label="返回 hemaAPI 首页">
+        <img class="brand-logo" src="/hemaapi-mark.svg" alt="" aria-hidden="true" />
+        hemaAPI
+      </a>
+      <nav class="primary-nav" aria-label="文档导航">
+        <a href="./index.html#system">支持工具</a>
+        <a class="nav-console" href="./index.html">返回首页</a>
+      </nav>
+    </header>
+
+    <main class="docs-shell">
+      <aside class="docs-sidebar" aria-label="工具目录">
+        <p>CCS 接入文档</p>
+        <a href="#codex">Codex</a>
+        <a href="#workbuddy">WorkBuddy</a>
+        <a href="#claude-code">Claude Code</a>
+        <a href="#opencode">OpenCode</a>
+        <a href="#openclaw">OpenClaw</a>
+        <a href="#hermes">Hermes</a>
+        <a href="#trae">TRAE</a>
+        <a href="#cursor">Cursor</a>
+      </aside>
+
+      <article class="docs-content">
+        <header class="docs-hero">
+          <p>HEMA API / CCS</p>
+          <h1>工具接入文档</h1>
+          <span>所有工具通过 CCS 统一配置。支持 ChatGPT、Kimi、Grok。</span>
+        </header>
+
+        <section class="docs-common" aria-labelledby="common-title">
+          <h2 id="common-title">CCS 通用配置</h2>
+          <ol>
+            <li><span>01</span><div><strong>添加供应商</strong><p>打开 CCS，新增 hemaAPI 供应商或自定义供应商配置。</p></div></li>
+            <li><span>02</span><div><strong>填写连接信息</strong><p>填入 hemaAPI 地址、key，并选择 ChatGPT、Kimi 或 Grok分组</p></div></li>
+            <li><span>03</span><div><strong>应用到工具</strong><p>将配置激活到对应工具，重启工具后发送一条测试消息。</p></div></li>
+          </ol>
+          <p class="ccs-note">Codex、Claude Code、OpenCode、OpenClaw、Hermes、Cursor 都按 CCS 通用流程配置；WorkBuddy 和 TRAE 按下方单独图文步骤配置。</p>
+
+        </section>
+
+        <section class="tool-doc" id="codex">
+          <span>01</span><h2>Codex</h2>
+          <a class="key-link" href="/keys?lang=zh" target="_top">去创建密钥</a>
+
+          <p>在 CCS 中选择 Codex 预设，填写 API 地址和 key，保存后重新打开 Codex。</p>
+          <div class="endpoint-copy">
+            <span class="endpoint-label">接口地址</span>
+            <code><span>https://hemasir.online/v1</span></code>
+            <button type="button" class="copy-endpoint" data-copy-text="https://hemasir.online/v1">复制</button>
+          </div>
+          <div class="tool-steps ccs-steps">
+            <article class="tool-step">
+              <strong>步骤 1</strong>
+              <p>在 CCS 首页右上角选择你要使用的工具，然后点击添加供应商。</p>
+              <img src="./assets/docs/ccs/ccs-01-select-tool-add-provider.png" alt="CCS 第一步：选择工具并点击添加供应商" />
+            </article>
+
+            <article class="tool-step">
+              <strong>步骤 2</strong>
+              <p>进入添加新供应商页面，点击自定义配置。</p>
+              <img src="./assets/docs/ccs/ccs-02-custom-provider.png" alt="CCS 第二步：选择自定义配置" />
+            </article>
+
+            <article class="tool-step">
+              <strong>步骤 3</strong>
+              <p>供应商名称填写 hemaAPI，粘贴后台生成的 key，请求地址填写 <span class="inline-endpoint"><span>https://hemasir.online/v1</span><button type="button" class="copy-endpoint" data-copy-text="https://hemasir.online/v1">复制</button></span>，默认模型填写所在分组要使用的模型 ID。</p>
+              <img src="./assets/docs/ccs/ccs-03-provider-details.png" alt="CCS 第三步：填写 hemaAPI 供应商、key、请求地址和模型 ID" />
+            </article>
+          </div>
+
+        </section>
+        <section class="tool-doc" id="workbuddy">
+          <span>02</span><h2>WorkBuddy</h2>
+          <a class="key-link" href="/keys?lang=zh" target="_top">去创建密钥</a>
+
+          <p>在设置中心，添加自定义模型，接口地址： <span class="inline-endpoint"><span>https://hemasir.online/v1</span><button type="button" class="copy-endpoint" data-copy-text="https://hemasir.online/v1">复制</button></span></p>
+
+          <div class="tool-steps">
+            <article class="tool-step">
+              <strong>步骤 1</strong>
+              <p>点击左下角头像进入菜单，再点击设置进入设置页面。</p>
+              <img src="./assets/docs/workbuddy/workbuddy-01-settings.png" alt="WorkBuddy 第一步：进入菜单并打开设置" />
+            </article>
+
+            <article class="tool-step">
+              <strong>步骤 2</strong>
+              <p>进入模型页面，点击添加模型。</p>
+              <img src="./assets/docs/workbuddy/workbuddy-02-add-model.png" alt="WorkBuddy 第二步：进入模型设置页面并点击添加模型" />
+            </article>
+
+            <article class="tool-step">
+              <strong>步骤 3</strong>
+              <p>下滑到最下面选择自定义，接口地址填写 <span class="inline-endpoint"><span>https://hemasir.online/v1</span><button type="button" class="copy-endpoint" data-copy-text="https://hemasir.online/v1">复制</button></span>，粘贴后台生成的 Key 后保存。</p>
+              <img src="./assets/docs/workbuddy/workbuddy-03-custom-endpoint.png" alt="WorkBuddy 第三步：选择自定义并填写接口地址和 Key" />
+            </article>
+          </div>
+
+          <div class="endpoint-copy">
+            <span class="endpoint-label">接口地址</span>
+            <code><span>https://hemasir.online/v1</span></code>
+            <button type="button" class="copy-endpoint" data-copy-text="https://hemasir.online/v1">复制</button>
+          </div>
+        </section>
+        <section class="tool-doc" id="claude-code">
+          <span>03</span><h2>Claude Code</h2>
+          <a class="key-link" href="/keys?lang=zh" target="_top">去创建密钥</a>
+
+          <p>在 CCS 中选择 Claude Code 预设，填写 API 地址和 key，保存并激活后重启终端会话。</p>
+          <div class="endpoint-copy">
+            <span class="endpoint-label">接口地址</span>
+            <code><span>https://hemasir.online/v1</span></code>
+            <button type="button" class="copy-endpoint" data-copy-text="https://hemasir.online/v1">复制</button>
+          </div>
+          <div class="tool-steps ccs-steps">
+            <article class="tool-step">
+              <strong>步骤 1</strong>
+              <p>在 CCS 首页右上角选择你要使用的工具，然后点击添加供应商。</p>
+              <img src="./assets/docs/ccs/ccs-01-select-tool-add-provider.png" alt="CCS 第一步：选择工具并点击添加供应商" />
+            </article>
+
+            <article class="tool-step">
+              <strong>步骤 2</strong>
+              <p>进入添加新供应商页面，点击自定义配置。</p>
+              <img src="./assets/docs/ccs/ccs-02-custom-provider.png" alt="CCS 第二步：选择自定义配置" />
+            </article>
+
+            <article class="tool-step">
+              <strong>步骤 3</strong>
+              <p>供应商名称填写 hemaAPI，粘贴后台生成的 key，请求地址填写 <span class="inline-endpoint"><span>https://hemasir.online/v1</span><button type="button" class="copy-endpoint" data-copy-text="https://hemasir.online/v1">复制</button></span>，默认模型填写所在分组要使用的模型 ID。</p>
+              <img src="./assets/docs/ccs/ccs-03-provider-details.png" alt="CCS 第三步：填写 hemaAPI 供应商、key、请求地址和模型 ID" />
+            </article>
+          </div>
+
+          <div class="tool-steps tool-steps--notice">
+            <article class="tool-step">
+              <strong>Claude Code 注意事项</strong>
+              <p>Claude Code 需要选择 OpenAI Chat Completions（需开启路由）和 ANTHROPIC_AUTH_TOKEN（默认）这两个模式，并在 CCS 设置中心开启路由。</p>
+              <img src="./assets/docs/claude-code/claude-code-01-required-modes.png" alt="Claude Code 需要选择 OpenAI Chat Completions 和 ANTHROPIC_AUTH_TOKEN 两个模式" />
+            </article>
+
+            <article class="tool-step">
+              <strong>设置中心开启路由</strong>
+              <p>在供应商高级选项里确认 API 格式为 OpenAI Chat Completions（需开启路由），再保存配置。</p>
+              <img src="./assets/docs/claude-code/claude-code-02-route-settings.png" alt="Claude Code 在设置中心开启路由并保存供应商配置" />
+            </article>
+          </div>
+        </section>
+        <section class="tool-doc" id="opencode">
+          <span>04</span><h2>OpenCode</h2>
+          <a class="key-link" href="/keys?lang=zh" target="_top">去创建密钥</a>
+
+          <p>在 CCS 中选择 OpenCode 预设，填写 API 地址和 key，保存并激活后发起一次测试请求。</p>
+          <div class="endpoint-copy">
+            <span class="endpoint-label">接口地址</span>
+            <code><span>https://hemasir.online/v1</span></code>
+            <button type="button" class="copy-endpoint" data-copy-text="https://hemasir.online/v1">复制</button>
+          </div>
+          <div class="tool-steps ccs-steps">
+            <article class="tool-step">
+              <strong>步骤 1</strong>
+              <p>在 CCS 首页右上角选择你要使用的工具，然后点击添加供应商。</p>
+              <img src="./assets/docs/ccs/ccs-01-select-tool-add-provider.png" alt="CCS 第一步：选择工具并点击添加供应商" />
+            </article>
+
+            <article class="tool-step">
+              <strong>步骤 2</strong>
+              <p>进入添加新供应商页面，点击自定义配置。</p>
+              <img src="./assets/docs/ccs/ccs-02-custom-provider.png" alt="CCS 第二步：选择自定义配置" />
+            </article>
+
+            <article class="tool-step">
+              <strong>步骤 3</strong>
+              <p>供应商名称填写 hemaAPI，粘贴后台生成的 key，请求地址填写 <span class="inline-endpoint"><span>https://hemasir.online/v1</span><button type="button" class="copy-endpoint" data-copy-text="https://hemasir.online/v1">复制</button></span>，默认模型填写所在分组要使用的模型 ID。</p>
+              <img src="./assets/docs/ccs/ccs-03-provider-details.png" alt="CCS 第三步：填写 hemaAPI 供应商、key、请求地址和模型 ID" />
+            </article>
+          </div>
+        </section>
+        <section class="tool-doc" id="openclaw">
+          <span>05</span><h2>OpenClaw</h2>
+          <a class="key-link" href="/keys?lang=zh" target="_top">去创建密钥</a>
+
+          <p>在 CCS 中选择 OpenClaw 预设，填写 API 地址和 key，保存并激活后刷新工具连接。</p>
+          <div class="endpoint-copy">
+            <span class="endpoint-label">接口地址</span>
+            <code><span>https://hemasir.online/v1</span></code>
+            <button type="button" class="copy-endpoint" data-copy-text="https://hemasir.online/v1">复制</button>
+          </div>
+          <div class="tool-steps ccs-steps">
+            <article class="tool-step">
+              <strong>步骤 1</strong>
+              <p>在 CCS 首页右上角选择你要使用的工具，然后点击添加供应商。</p>
+              <img src="./assets/docs/ccs/ccs-01-select-tool-add-provider.png" alt="CCS 第一步：选择工具并点击添加供应商" />
+            </article>
+
+            <article class="tool-step">
+              <strong>步骤 2</strong>
+              <p>进入添加新供应商页面，点击自定义配置。</p>
+              <img src="./assets/docs/ccs/ccs-02-custom-provider.png" alt="CCS 第二步：选择自定义配置" />
+            </article>
+
+            <article class="tool-step">
+              <strong>步骤 3</strong>
+              <p>供应商名称填写 hemaAPI，粘贴后台生成的 key，请求地址填写 <span class="inline-endpoint"><span>https://hemasir.online/v1</span><button type="button" class="copy-endpoint" data-copy-text="https://hemasir.online/v1">复制</button></span>，默认模型填写所在分组要使用的模型 ID。</p>
+              <img src="./assets/docs/ccs/ccs-03-provider-details.png" alt="CCS 第三步：填写 hemaAPI 供应商、key、请求地址和模型 ID" />
+            </article>
+          </div>
+        </section>
+        <section class="tool-doc" id="hermes">
+          <span>06</span><h2>Hermes</h2>
+          <a class="key-link" href="/keys?lang=zh" target="_top">去创建密钥</a>
+
+          <p>在 CCS 中选择 Hermes 预设，填写 API 地址和 key，保存并激活后重新启动 Hermes。</p>
+          <div class="endpoint-copy">
+            <span class="endpoint-label">接口地址</span>
+            <code><span>https://hemasir.online/v1</span></code>
+            <button type="button" class="copy-endpoint" data-copy-text="https://hemasir.online/v1">复制</button>
+          </div>
+          <div class="tool-steps ccs-steps">
+            <article class="tool-step">
+              <strong>步骤 1</strong>
+              <p>在 CCS 首页右上角选择你要使用的工具，然后点击添加供应商。</p>
+              <img src="./assets/docs/ccs/ccs-01-select-tool-add-provider.png" alt="CCS 第一步：选择工具并点击添加供应商" />
+            </article>
+
+            <article class="tool-step">
+              <strong>步骤 2</strong>
+              <p>进入添加新供应商页面，点击自定义配置。</p>
+              <img src="./assets/docs/ccs/ccs-02-custom-provider.png" alt="CCS 第二步：选择自定义配置" />
+            </article>
+
+            <article class="tool-step">
+              <strong>步骤 3</strong>
+              <p>供应商名称填写 hemaAPI，粘贴后台生成的 key，请求地址填写 <span class="inline-endpoint"><span>https://hemasir.online/v1</span><button type="button" class="copy-endpoint" data-copy-text="https://hemasir.online/v1">复制</button></span>，默认模型填写所在分组要使用的模型 ID。</p>
+              <img src="./assets/docs/ccs/ccs-03-provider-details.png" alt="CCS 第三步：填写 hemaAPI 供应商、key、请求地址和模型 ID" />
+            </article>
+          </div>
+        </section>
+        <section class="tool-doc" id="trae">
+          <span>07</span><h2>TRAE</h2>
+          <a class="key-link" href="/keys?lang=zh" target="_top">去创建密钥</a>
+
+          <p>在 TRAE 的设置里进入模型页面，添加自定义模型并填写接口地址、模型 ID 和 Key。</p>
+
+          <div class="tool-steps">
+            <article class="tool-step">
+              <strong>步骤 1</strong>
+              <p>点击右上角进入设置页面，切换到模型页面，然后点击添加模型。</p>
+              <img src="./assets/docs/trae/trae-01-model-settings.png" alt="TRAE 第一步：进入设置和模型页面并点击添加模型" />
+            </article>
+
+            <article class="tool-step">
+              <strong>步骤 2</strong>
+              <p>选择自定义配置，API 格式选择 OpenAI Chat Completions，接口地址填写 <span class="inline-endpoint"><span>https://hemasir.online/v1</span><button type="button" class="copy-endpoint" data-copy-text="https://hemasir.online/v1">复制</button></span>，再填写模型 ID 和后台生成的 Key。</p>
+              <img src="./assets/docs/trae/trae-02-custom-config.png" alt="TRAE 第二步：选择自定义配置并填写接口地址、模型 ID 和 Key" />
+            </article>
+          </div>
+
+          <div class="endpoint-copy">
+            <span class="endpoint-label">接口地址</span>
+            <code><span>https://hemasir.online/v1</span></code>
+            <button type="button" class="copy-endpoint" data-copy-text="https://hemasir.online/v1">复制</button>
+          </div>
+        </section>
+        <section class="tool-doc" id="cursor">
+          <span>08</span><h2>Cursor</h2>
+          <a class="key-link" href="/keys?lang=zh" target="_top">去创建密钥</a>
+
+          <p>在 CCS 中配置 hemaAPI 供应商，填写 API 地址和 key，保存后重新加载 Cursor 或对应连接。</p>
+          <div class="endpoint-copy">
+            <span class="endpoint-label">接口地址</span>
+            <code><span>https://hemasir.online/v1</span></code>
+            <button type="button" class="copy-endpoint" data-copy-text="https://hemasir.online/v1">复制</button>
+          </div>
+          <div class="tool-steps ccs-steps">
+            <article class="tool-step">
+              <strong>步骤 1</strong>
+              <p>在 CCS 首页右上角选择你要使用的工具，然后点击添加供应商。</p>
+              <img src="./assets/docs/ccs/ccs-01-select-tool-add-provider.png" alt="CCS 第一步：选择工具并点击添加供应商" />
+            </article>
+
+            <article class="tool-step">
+              <strong>步骤 2</strong>
+              <p>进入添加新供应商页面，点击自定义配置。</p>
+              <img src="./assets/docs/ccs/ccs-02-custom-provider.png" alt="CCS 第二步：选择自定义配置" />
+            </article>
+
+            <article class="tool-step">
+              <strong>步骤 3</strong>
+              <p>供应商名称填写 hemaAPI，粘贴后台生成的 key，请求地址填写 <span class="inline-endpoint"><span>https://hemasir.online/v1</span><button type="button" class="copy-endpoint" data-copy-text="https://hemasir.online/v1">复制</button></span>，默认模型填写所在分组要使用的模型 ID。</p>
+              <img src="./assets/docs/ccs/ccs-03-provider-details.png" alt="CCS 第三步：填写 hemaAPI 供应商、key、请求地址和模型 ID" />
+            </article>
+          </div>
+        </section>
+      </article>
+    </main>
+    <script>
+      const copyEndpoint = async (value) => {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(value);
+          return;
+        }
+
+        const field = document.createElement("textarea");
+        field.value = value;
+        field.setAttribute("readonly", "");
+        field.style.position = "fixed";
+        field.style.opacity = "0";
+        document.body.appendChild(field);
+        field.select();
+        document.execCommand("copy");
+        field.remove();
+      };
+
+      document.querySelectorAll(".copy-endpoint").forEach((button) => {
+        button.addEventListener("click", async () => {
+          const label = button.textContent;
+          await copyEndpoint(button.dataset.copyText);
+          button.textContent = "已复制";
+          button.classList.add("copied");
+          window.setTimeout(() => {
+            button.textContent = label;
+            button.classList.remove("copied");
+          }, 1200);
+        });
+      });
+    </script>
+  </body>
+</html>

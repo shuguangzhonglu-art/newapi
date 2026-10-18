@@ -42,9 +42,9 @@ export function RankingsHero(props: RankingsHeroProps) {
   const { t } = useTranslation()
 
   return (
-    <section className='space-y-5'>
+    <section className='hema-rankings-hero space-y-5'>
       <div className='space-y-2'>
-        <h1 className='text-[clamp(1.75rem,4vw,2.5rem)] leading-[1.15] font-bold tracking-tight'>
+        <h1 className='text-3xl leading-[1.15] font-bold tracking-tight sm:text-4xl'>
           {t('Rankings')}
         </h1>
         <p className='text-muted-foreground/80 max-w-2xl text-sm'>

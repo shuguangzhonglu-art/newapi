@@ -115,7 +115,7 @@ export function Hero(props: HeroProps) {
           </div>
 
           <h1
-            className='landing-animate-fade-up text-[clamp(2.25rem,4.5vw,3.25rem)] leading-[1.15] font-bold tracking-tight'
+            className='landing-animate-fade-up text-4xl leading-[1.15] font-bold tracking-tight sm:text-5xl lg:text-[3.25rem]'
             style={{ animationDelay: '60ms' }}
           >
             {t('Unified API Gateway for')}

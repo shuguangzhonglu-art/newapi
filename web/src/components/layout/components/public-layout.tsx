@@ -1,3 +1,5 @@
+import { cn } from '@/lib/utils'
+
 /*
 Copyright (C) 2023-2026 QuantumNous
 
@@ -21,6 +23,7 @@ import { PublicHeader, type PublicHeaderProps } from './public-header'
 
 type PublicLayoutProps = {
   children: React.ReactNode
+  className?: string
   showMainContainer?: boolean
   navContent?: React.ReactNode
   headerProps?: Omit<PublicHeaderProps, 'navContent'>
@@ -34,7 +37,12 @@ type PublicLayoutProps = {
 
 export function PublicLayout(props: PublicLayoutProps) {
   return (
-    <div className='bg-background text-foreground relative min-h-svh overflow-x-clip'>
+    <div
+      className={cn(
+        'hema-public-shell bg-background text-foreground relative min-h-svh overflow-x-clip',
+        props.className
+      )}
+    >
       <PublicHeader
         navContent={props.navContent}
         navLinks={props.navLinks}

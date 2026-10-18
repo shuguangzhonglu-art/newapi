@@ -75,7 +75,7 @@ export function Playground() {
   })
 
   return (
-    <div className='relative flex size-full min-h-0 flex-col overflow-hidden'>
+    <div className='hema-playground-page relative flex size-full min-h-0 flex-col overflow-hidden'>
       {/* Full-width scroll container: scrolling works even over side whitespace */}
       <div className='flex min-h-0 flex-1 flex-col overflow-hidden'>
         <PlaygroundChat

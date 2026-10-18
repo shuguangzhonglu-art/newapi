@@ -5,25 +5,9 @@ const canvas = document.querySelector("#scene");
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const isMobile = window.matchMedia("(max-width: 767px)").matches;
 
-// WebGL is an enhancement. Some browsers, privacy modes, and remote desktop
-// sessions deny a WebGL context; keep the page usable in that case instead of
-// leaving the boot screen visible forever.
-let renderer;
-try {
-  renderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile, alpha: false });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.15 : 1.5));
-  renderer.setClearColor(0xedf0e6, 1);
-} catch (error) {
-  console.warn("hema-home: WebGL unavailable, using a static fallback", error);
-  renderer = {
-    capabilities: { getMaxAnisotropy: () => 1 },
-    setPixelRatio() {},
-    setClearColor() {},
-    setSize() {},
-    render() {}
-  };
-  document.documentElement.classList.add("webgl-fallback");
-}
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile, alpha: false });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.15 : 1.5));
+renderer.setClearColor(0xedf0e6, 1);
 
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0xedf0e6, 0.042);
@@ -533,10 +517,6 @@ function resize() {
 function onPointerMove(event) {
   pointerTarget.x = (event.clientX / window.innerWidth - 0.5) * 2;
   pointerTarget.y = (event.clientY / window.innerHeight - 0.5) * 2;
-  if (!reduceMotion) {
-    document.documentElement.style.setProperty("--home-pointer-x", `${pointerTarget.x.toFixed(3)}`);
-    document.documentElement.style.setProperty("--home-pointer-y", `${pointerTarget.y.toFixed(3)}`);
-  }
   if (heroInView && !event.target.closest("a, button, dialog")) {
     document.body.style.cursor = findPersonAt(event.clientX, event.clientY) !== null ? "pointer" : "";
   }
@@ -595,26 +575,9 @@ document.querySelectorAll(".reveal").forEach((element) => observer.observe(eleme
 window.addEventListener("resize", resize, { passive: true });
 window.addEventListener("pointermove", onPointerMove, { passive: true });
 
-if (reduceMotion) {
-  document.documentElement.style.setProperty("--home-pointer-x", "0");
-  document.documentElement.style.setProperty("--home-pointer-y", "0");
-}
-
 resize();
 render();
 
 window.addEventListener("load", () => {
   window.setTimeout(() => document.querySelector(".boot")?.classList.add("done"), 450);
 }, { once: true });
-
-// Never block navigation on an optional visual enhancement or a late asset.
-const finishBoot = () => document.querySelector(".boot")?.classList.add("done");
-window.addEventListener("error", (event) => {
-  console.warn("hema-home: non-fatal startup error", event.error || event.message);
-  finishBoot();
-}, { once: true });
-window.addEventListener("unhandledrejection", (event) => {
-  console.warn("hema-home: non-fatal startup rejection", event.reason);
-  finishBoot();
-}, { once: true });
-window.setTimeout(finishBoot, 3000);
