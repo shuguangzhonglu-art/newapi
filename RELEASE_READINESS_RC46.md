@@ -2,8 +2,8 @@
 
 适用分支：`upgrade/hema-rc46`
 
-当前候选提交：`b8be968c333f4555d32e31d2ab616190da318056`  
-上游 rc.46 提交：`7d8b91268`  
+当前候选提交：`e43fd2c0d`（包含 rc.46 合并提交 `b8be968c3`）
+上游 rc.46 提交：`7d8b91268`
 HEMA UI 基线：`7cf75bb8d`
 
 这份标准用于判断候选版本能否进入灰度或生产。候选分支、生产容器、生产数据库和线上 Nginx 必须分开验证。任何一项阻断项未通过，都不能称为可上线。
@@ -12,12 +12,12 @@ HEMA UI 基线：`7cf75bb8d`
 
 | 项目 | 状态 | 说明 |
 | --- | --- | --- |
-| rc.46 合并 | 已通过 | 无合并冲突，提交为 `b8be968c3` |
+| rc.46 合并 | 已通过 | 无合并冲突，合并提交为 `b8be968c3` |
 | HEMA UI 保留 | 已通过 | `web/public/hema-home/` 未被 rc.46 覆盖 |
 | Go 版本与镜像基线 | 已通过 | `go.mod` 和 `Dockerfile` 使用 Go `1.26.10` |
 | `git diff --check` | 已通过 | 当前候选无空白错误 |
-| relaykit 独立构建 | 已通过 | `GOWORK=off go build ./...` |
-| 完整 Go 测试 | 待执行 | 当前环境需要可写的 Go 模块缓存 |
+| relaykit 独立构建 | 环境阻塞 | 代码路径已检查；本次重跑因 DNS 无法访问 `proxy.golang.org` |
+| 完整 Go 测试 | 环境阻塞 | 本次重跑因 DNS 无法访问 `proxy.golang.org` |
 | 前端依赖、类型检查、构建 | 待执行 | 当前环境缺少 Bun 和 `web/node_modules` |
 | 三数据库迁移矩阵 | 待执行 | 必须覆盖 SQLite、MySQL、PostgreSQL |
 | API/流式/错误日志验收 | 待执行 | 必须使用隔离测试环境和临时 key |
@@ -56,12 +56,12 @@ HEMA UI 基线：`7cf75bb8d`
    - `/v1/chat/completions`：非流 JSON、流式 SSE、`[DONE]`、工具调用、上游错误和客户端取消均有结果。
    - `/v1/messages`：非流与流式响应、错误响应和请求 ID 可查。
    - `/v1/responses`：非流与流式响应、错误响应和请求 ID 可查。
-   - 对每个接口分别记录 HTTP 状态、响应体是否为空、`finish_reason`、usage、上游请求 ID、HEMA 请求 ID、首 token 和总耗时。
+   - 对每个接口分别记录 HTTP 状态、响应体是否为空、`finish_reason`、usage、上游请求 ID、HEMA `X-Oneapi-Request-Id`、首 token 和总耗时。
    - 错误请求必须在 HEMA 请求日志中留下记录，即使未消费；日志中的错误原因不能只存在上游。
    - 流式请求必须验证代理缓冲、连接保持和长间隔 token；不得把 HTTP 200 当作语义成功。
 
 6. **镜像与运行时**
-   - 以候选提交构建镜像，记录镜像 digest。
+   - 以候选提交构建镜像，记录本地 image ID；推送到 registry 后再记录不可变 digest。
    - 使用独立 compose 项目启动，不得复用生产容器名、网络、卷或数据库。
    - 健康检查、`/v1/models`、登录页、HEMA 首页和核心 API 均通过后才可进入灰度。
    - 容器重启后配置、数据库、Redis、静态资源和日志仍可用。
@@ -113,8 +113,8 @@ MODEL='test-model' \
 ./scripts/rc46-release-gate.sh
 ```
 
-脚本不会读取或保存生产密钥；报告默认写入 `.artifacts/rc46-release-gate/<timestamp>/`。
+脚本不会读取或保存生产密钥；报告默认写入系统临时目录 `newapi-rc46-release-gate/<timestamp>/`。
 
 ## 当前上线判定
 
-当前只能判定为**候选已合并，尚未达到上线标准**。前端构建、完整 Go 测试、三数据库迁移、API/日志/计费验收、镜像健康检查和回滚演练完成并留存证据后，才能批准灰度；生产容器目前没有改动。
+当前只能判定为**候选已合并，尚未达到上线标准**。本机门禁实跑结果为 9 项通过、8 项失败、1 项警告：Bun 和 Docker 未安装，Go 依赖下载因 DNS 失败，API smoke 未执行。前端构建、完整 Go 测试、三数据库迁移、API/日志/计费验收、镜像健康检查和回滚演练完成并留存证据后，才能批准灰度；生产容器目前没有改动。

@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-report_root="${REPORT_DIR:-${repo_root}/.artifacts/rc46-release-gate/$(date -u +%Y%m%dT%H%M%SZ)}"
+report_root="${REPORT_DIR:-${TMPDIR:-/tmp}/newapi-rc46-release-gate/$(date -u +%Y%m%dT%H%M%SZ)}"
 mkdir -p "$report_root"
 pass_count=0
 fail_count=0
@@ -62,7 +62,7 @@ fi
 
 if command -v docker >/dev/null 2>&1; then
   run_check docker_build bash -c 'docker build --pull=false -t new-api:rc46-gate .'
-  run_check docker_digest bash -c 'docker image inspect new-api:rc46-gate --format "{{.Id}}"'
+  run_check docker_image_id bash -c 'docker image inspect new-api:rc46-gate --format "{{.Id}}"'
 else
   fail_item "docker is unavailable; image gate cannot run"
 fi
@@ -88,22 +88,23 @@ if [[ -n "${BASE_URL:-}" && -n "${API_KEY:-}" && -n "${MODEL:-}" ]]; then
   auth_header="Authorization: Bearer ${API_KEY}"
   api_dir="$report_root/api"
   mkdir -p "$api_dir"
-  if "${curl_common[@]}" --fail-with-body "$base_url/v1/models" -H "$auth_header" -D "$api_dir/models.headers" >"$api_dir/models.json" 2>"$api_dir/models.err" && rg -q '^HTTP/[0-9.]+ 2[0-9][0-9]' "$api_dir/models.headers"; then pass_item "api_models"; else fail_item "api_models"; fi
+  has_request_id() { rg -qi '^X-Oneapi-Request-Id:[[:space:]]*[^[:space:]]+' "$1"; }
+  if "${curl_common[@]}" --fail-with-body "$base_url/v1/models" -H "$auth_header" -D "$api_dir/models.headers" >"$api_dir/models.json" 2>"$api_dir/models.err" && rg -q '^HTTP/[0-9.]+ 2[0-9][0-9]' "$api_dir/models.headers" && has_request_id "$api_dir/models.headers"; then pass_item "api_models"; else fail_item "api_models (status or X-Request-ID missing)"; fi
   chat_body='{"model":"'"$MODEL"'","messages":[{"role":"user","content":"release gate ping"}],"stream":false,"max_tokens":16}'
   if "${curl_common[@]}" --fail-with-body "$base_url/v1/chat/completions" -H "$auth_header" -H 'Content-Type: application/json' -D "$api_dir/chat.headers" -o "$api_dir/chat.json" --data "$chat_body" >"$api_dir/chat.stdout" 2>"$api_dir/chat.err"; then
-    if rg -q '"id"\s*:\s*"[^"]+"' "$api_dir/chat.json" && rg -q '"usage"\s*:' "$api_dir/chat.json"; then pass_item "api_chat_non_stream"; else fail_item "api_chat_non_stream response contract"; fi
+    if rg -q '"id"\s*:\s*"[^"]+"' "$api_dir/chat.json" && rg -q '"usage"\s*:' "$api_dir/chat.json" && has_request_id "$api_dir/chat.headers"; then pass_item "api_chat_non_stream"; else fail_item "api_chat_non_stream response contract or X-Request-ID missing"; fi
   else fail_item "api_chat_non_stream"; fi
   if "${curl_common[@]}" --fail-with-body "$base_url/v1/chat/completions" -H "$auth_header" -H 'Content-Type: application/json' -D "$api_dir/chat-stream.headers" -o "$api_dir/chat-stream.sse" --data '{"model":"'"$MODEL"'","messages":[{"role":"user","content":"release gate stream ping"}],"stream":true,"max_tokens":16}' >"$api_dir/chat-stream.stdout" 2>"$api_dir/chat-stream.err"; then
-    if rg -q '\[DONE\]' "$api_dir/chat-stream.sse" && rg -q '"finish_reason"\s*:' "$api_dir/chat-stream.sse"; then pass_item "api_chat_stream_done"; else fail_item "api_chat_stream response contract"; fi
+    if rg -q '\[DONE\]' "$api_dir/chat-stream.sse" && rg -q '"finish_reason"\s*:' "$api_dir/chat-stream.sse" && has_request_id "$api_dir/chat-stream.headers"; then pass_item "api_chat_stream_done"; else fail_item "api_chat_stream response contract or X-Request-ID missing"; fi
   else
     fail_item "api_chat_stream"
   fi
-  if "${curl_common[@]}" --fail-with-body "$base_url/v1/messages" -H "$auth_header" -H 'Content-Type: application/json' -D "$api_dir/messages.headers" -o "$api_dir/messages.json" --data '{"model":"'"$MODEL"'","max_tokens":16,"messages":[{"role":"user","content":"release gate ping"}]}' >"$api_dir/messages.stdout" 2>"$api_dir/messages.err"; then pass_item "api_messages_non_stream"; else fail_item "api_messages_non_stream"; fi
-  if "${curl_common[@]}" --fail-with-body "$base_url/v1/responses" -H "$auth_header" -H 'Content-Type: application/json' -D "$api_dir/responses.headers" -o "$api_dir/responses.json" --data '{"model":"'"$MODEL"'","input":"release gate ping","max_output_tokens":16}' >"$api_dir/responses.stdout" 2>"$api_dir/responses.err"; then pass_item "api_responses_non_stream"; else fail_item "api_responses_non_stream"; fi
+  if "${curl_common[@]}" --fail-with-body "$base_url/v1/messages" -H "$auth_header" -H 'Content-Type: application/json' -D "$api_dir/messages.headers" -o "$api_dir/messages.json" --data '{"model":"'"$MODEL"'","max_tokens":16,"messages":[{"role":"user","content":"release gate ping"}]}' >"$api_dir/messages.stdout" 2>"$api_dir/messages.err"; then if has_request_id "$api_dir/messages.headers"; then pass_item "api_messages_non_stream"; else fail_item "api_messages_non_stream X-Request-ID missing"; fi; else fail_item "api_messages_non_stream"; fi
+  if "${curl_common[@]}" --fail-with-body "$base_url/v1/responses" -H "$auth_header" -H 'Content-Type: application/json' -D "$api_dir/responses.headers" -o "$api_dir/responses.json" --data '{"model":"'"$MODEL"'","input":"release gate ping","max_output_tokens":16}' >"$api_dir/responses.stdout" 2>"$api_dir/responses.err"; then if has_request_id "$api_dir/responses.headers"; then pass_item "api_responses_non_stream"; else fail_item "api_responses_non_stream X-Request-ID missing"; fi; else fail_item "api_responses_non_stream"; fi
   if curl --silent --show-error --connect-timeout 10 --max-time 30 -D "$api_dir/error.headers" -o "$api_dir/error.json" -X POST "$base_url/v1/chat/completions" -H "$auth_header" -H 'Content-Type: application/json' --data '{"model":"__release_gate_invalid_model__","messages":[{"role":"user","content":"release gate error ping"}]}' >/dev/null 2>"$api_dir/error.err"; then
-    if rg -q '^HTTP/[0-9.]+ [45][0-9][0-9]' "$api_dir/error.headers"; then pass_item "api_error_response"; else fail_item "api_error_response returned 2xx"; fi
+    if rg -q '^HTTP/[0-9.]+ [45][0-9][0-9]' "$api_dir/error.headers" && has_request_id "$api_dir/error.headers"; then pass_item "api_error_response"; else fail_item "api_error_response status or X-Request-ID missing"; fi
   else
-    if rg -q '^HTTP/[0-9.]+ [45][0-9][0-9]' "$api_dir/error.headers"; then pass_item "api_error_response"; else fail_item "api_error_response transport failure"; fi
+    if rg -q '^HTTP/[0-9.]+ [45][0-9][0-9]' "$api_dir/error.headers" && has_request_id "$api_dir/error.headers"; then pass_item "api_error_response"; else fail_item "api_error_response transport failure or X-Request-ID missing"; fi
   fi
 else
   warn_item "API smoke skipped; set BASE_URL, API_KEY, and MODEL"
