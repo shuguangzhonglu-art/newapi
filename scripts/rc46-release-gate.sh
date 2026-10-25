@@ -50,17 +50,6 @@ go_cache="${GOCACHE:-${repo_root}/.cache/go-build}"
 mkdir -p "$go_mod_cache" "$go_cache"
 export GOMODCACHE="$go_mod_cache" GOCACHE="$go_cache"
 
-if command -v go >/dev/null 2>&1; then
-  run_check go_test bash -c 'go test ./...'
-  run_check root_build bash -c 'go build ./...'
-  run_check relaykit_build bash -c 'cd relaykit && GOWORK=off go build ./...'
-  run_check relaykit_test bash -c 'cd relaykit && GOWORK=off go test ./...'
-  run_check tokenkit_build bash -c 'cd tokenkit && GOWORK=off go build ./...'
-  run_check tokenkit_test bash -c 'cd tokenkit && GOWORK=off go test ./...'
-else
-  fail_item "go is unavailable"
-fi
-
 if command -v bun >/dev/null 2>&1; then
   run_check frontend_install bash -c 'cd web && bun install --frozen-lockfile'
   run_check frontend_typecheck bash -c 'cd web && bun run typecheck'
@@ -71,21 +60,51 @@ else
   fail_item "bun is unavailable; frontend gate cannot run"
 fi
 
+if command -v docker >/dev/null 2>&1; then
+  run_check docker_build bash -c 'docker build --pull=false -t new-api:rc46-gate .'
+  run_check docker_digest bash -c 'docker image inspect new-api:rc46-gate --format "{{.Id}}"'
+else
+  fail_item "docker is unavailable; image gate cannot run"
+fi
+
+if command -v go >/dev/null 2>&1; then
+  if [[ -d web/dist ]]; then
+    run_check go_test bash -c 'go test ./...'
+    run_check root_build bash -c 'go build ./...'
+  else
+    fail_item "web/dist is missing; root Go tests are blocked until frontend build"
+  fi
+  run_check relaykit_build bash -c 'cd relaykit && GOWORK=off go build ./...'
+  run_check relaykit_test bash -c 'cd relaykit && GOWORK=off go test ./...'
+  run_check tokenkit_build bash -c 'cd tokenkit && GOWORK=off go build ./...'
+  run_check tokenkit_test bash -c 'cd tokenkit && GOWORK=off go test ./...'
+else
+  fail_item "go is unavailable"
+fi
+
 if [[ -n "${BASE_URL:-}" && -n "${API_KEY:-}" && -n "${MODEL:-}" ]]; then
+  base_url="${BASE_URL%/}"
   curl_common=(curl --silent --show-error --connect-timeout 10 --max-time 120)
   auth_header="Authorization: Bearer ${API_KEY}"
   api_dir="$report_root/api"
   mkdir -p "$api_dir"
-  if "${curl_common[@]}" --fail-with-body "$BASE_URL/v1/models" -H "$auth_header" >"$api_dir/models.json" 2>"$api_dir/models.err"; then pass_item "api_models"; else fail_item "api_models"; fi
+  if "${curl_common[@]}" --fail-with-body "$base_url/v1/models" -H "$auth_header" -D "$api_dir/models.headers" >"$api_dir/models.json" 2>"$api_dir/models.err" && rg -q '^HTTP/[0-9.]+ 2[0-9][0-9]' "$api_dir/models.headers"; then pass_item "api_models"; else fail_item "api_models"; fi
   chat_body='{"model":"'"$MODEL"'","messages":[{"role":"user","content":"release gate ping"}],"stream":false,"max_tokens":16}'
-  if "${curl_common[@]}" --fail-with-body "$BASE_URL/v1/chat/completions" -H "$auth_header" -H 'Content-Type: application/json' -D "$api_dir/chat.headers" -o "$api_dir/chat.json" --data "$chat_body" >"$api_dir/chat.stdout" 2>"$api_dir/chat.err"; then pass_item "api_chat_non_stream"; else fail_item "api_chat_non_stream"; fi
-  if "${curl_common[@]}" --fail-with-body "$BASE_URL/v1/chat/completions" -H "$auth_header" -H 'Content-Type: application/json' -D "$api_dir/chat-stream.headers" -o "$api_dir/chat-stream.sse" --data '{"model":"'"$MODEL"'","messages":[{"role":"user","content":"release gate stream ping"}],"stream":true,"max_tokens":16}' >"$api_dir/chat-stream.stdout" 2>"$api_dir/chat-stream.err"; then
-    if rg -q '\[DONE\]' "$api_dir/chat-stream.sse"; then pass_item "api_chat_stream_done"; else fail_item "api_chat_stream_done marker missing"; fi
+  if "${curl_common[@]}" --fail-with-body "$base_url/v1/chat/completions" -H "$auth_header" -H 'Content-Type: application/json' -D "$api_dir/chat.headers" -o "$api_dir/chat.json" --data "$chat_body" >"$api_dir/chat.stdout" 2>"$api_dir/chat.err"; then
+    if rg -q '"id"\s*:\s*"[^"]+"' "$api_dir/chat.json" && rg -q '"usage"\s*:' "$api_dir/chat.json"; then pass_item "api_chat_non_stream"; else fail_item "api_chat_non_stream response contract"; fi
+  else fail_item "api_chat_non_stream"; fi
+  if "${curl_common[@]}" --fail-with-body "$base_url/v1/chat/completions" -H "$auth_header" -H 'Content-Type: application/json' -D "$api_dir/chat-stream.headers" -o "$api_dir/chat-stream.sse" --data '{"model":"'"$MODEL"'","messages":[{"role":"user","content":"release gate stream ping"}],"stream":true,"max_tokens":16}' >"$api_dir/chat-stream.stdout" 2>"$api_dir/chat-stream.err"; then
+    if rg -q '\[DONE\]' "$api_dir/chat-stream.sse" && rg -q '"finish_reason"\s*:' "$api_dir/chat-stream.sse"; then pass_item "api_chat_stream_done"; else fail_item "api_chat_stream response contract"; fi
   else
     fail_item "api_chat_stream"
   fi
-  if "${curl_common[@]}" --fail-with-body "$BASE_URL/v1/messages" -H "$auth_header" -H 'Content-Type: application/json' -D "$api_dir/messages.headers" -o "$api_dir/messages.json" --data '{"model":"'"$MODEL"'","max_tokens":16,"messages":[{"role":"user","content":"release gate ping"}]}' >"$api_dir/messages.stdout" 2>"$api_dir/messages.err"; then pass_item "api_messages_non_stream"; else warn_item "api_messages_non_stream unavailable"; fi
-  if "${curl_common[@]}" --fail-with-body "$BASE_URL/v1/responses" -H "$auth_header" -H 'Content-Type: application/json' -D "$api_dir/responses.headers" -o "$api_dir/responses.json" --data '{"model":"'"$MODEL"'","input":"release gate ping","max_output_tokens":16}' >"$api_dir/responses.stdout" 2>"$api_dir/responses.err"; then pass_item "api_responses_non_stream"; else warn_item "api_responses_non_stream unavailable"; fi
+  if "${curl_common[@]}" --fail-with-body "$base_url/v1/messages" -H "$auth_header" -H 'Content-Type: application/json' -D "$api_dir/messages.headers" -o "$api_dir/messages.json" --data '{"model":"'"$MODEL"'","max_tokens":16,"messages":[{"role":"user","content":"release gate ping"}]}' >"$api_dir/messages.stdout" 2>"$api_dir/messages.err"; then pass_item "api_messages_non_stream"; else fail_item "api_messages_non_stream"; fi
+  if "${curl_common[@]}" --fail-with-body "$base_url/v1/responses" -H "$auth_header" -H 'Content-Type: application/json' -D "$api_dir/responses.headers" -o "$api_dir/responses.json" --data '{"model":"'"$MODEL"'","input":"release gate ping","max_output_tokens":16}' >"$api_dir/responses.stdout" 2>"$api_dir/responses.err"; then pass_item "api_responses_non_stream"; else fail_item "api_responses_non_stream"; fi
+  if curl --silent --show-error --connect-timeout 10 --max-time 30 -D "$api_dir/error.headers" -o "$api_dir/error.json" -X POST "$base_url/v1/chat/completions" -H "$auth_header" -H 'Content-Type: application/json' --data '{"model":"__release_gate_invalid_model__","messages":[{"role":"user","content":"release gate error ping"}]}' >/dev/null 2>"$api_dir/error.err"; then
+    if rg -q '^HTTP/[0-9.]+ [45][0-9][0-9]' "$api_dir/error.headers"; then pass_item "api_error_response"; else fail_item "api_error_response returned 2xx"; fi
+  else
+    if rg -q '^HTTP/[0-9.]+ [45][0-9][0-9]' "$api_dir/error.headers"; then pass_item "api_error_response"; else fail_item "api_error_response transport failure"; fi
+  fi
 else
   warn_item "API smoke skipped; set BASE_URL, API_KEY, and MODEL"
 fi
