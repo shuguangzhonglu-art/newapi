@@ -2,7 +2,7 @@
 
 适用分支：`upgrade/hema-rc46`
 
-当前候选提交：`e43fd2c0d`（包含 rc.46 合并提交 `b8be968c3`）
+当前候选提交：`HEAD`（包含 rc.46 合并提交 `b8be968c3`）
 上游 rc.46 提交：`7d8b91268`
 HEMA UI 基线：`7cf75bb8d`
 
