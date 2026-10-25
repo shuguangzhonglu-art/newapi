@@ -51,6 +51,7 @@ mkdir -p "$go_mod_cache" "$go_cache"
 export GOMODCACHE="$go_mod_cache" GOCACHE="$go_cache"
 
 if command -v bun >/dev/null 2>&1; then
+  if [[ "$(bun --version)" == "1.4.0" ]]; then pass_item "Bun runtime is 1.4.0"; else fail_item "Bun runtime must be 1.4.0"; fi
   run_check frontend_install bash -c 'cd web && bun install --frozen-lockfile'
   run_check frontend_typecheck bash -c 'cd web && bun run typecheck'
   run_check frontend_lint bash -c 'cd web && bun run lint'
@@ -68,6 +69,7 @@ else
 fi
 
 if command -v go >/dev/null 2>&1; then
+  if [[ "$(go version | awk '{print $3}')" == "go1.26.10" ]]; then pass_item "Go runtime is 1.26.10"; else fail_item "Go runtime must be 1.26.10"; fi
   if [[ -d web/dist ]]; then
     run_check go_test bash -c 'go test ./...'
     run_check root_build bash -c 'go build ./...'

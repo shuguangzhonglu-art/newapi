@@ -32,6 +32,7 @@ HEMA UI 基线：`7cf75bb8d`
    - 分支为 `upgrade/hema-rc46`，提交和上游 tag 可追溯。
    - `git diff --check` 通过，工作树干净。
    - `go.mod`、Dockerfile、CI 使用预期 Go 版本。
+   - 本地或 CI 运行时 Go 必须为 `1.26.10`，前端 Bun 必须为 `1.4.0`。
    - `web/public/hema-home/` 的 HEMA 定制首页、静态资源和路由文件仍存在，且与 `7cf75bb8d` 基线一致。
 
 2. **后端构建与测试**
