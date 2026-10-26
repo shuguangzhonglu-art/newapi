@@ -105,6 +105,17 @@ HEMA UI 基线：`7cf75bb8d`
 ./scripts/rc46-release-gate.sh
 ```
 
+数据库矩阵使用独立入口。SQLite 可直接执行；MySQL 和 PostgreSQL 必须是隔离 staging 数据库，并显式设置确认变量：
+
+```bash
+ALLOW_EXTERNAL_DB=1 \
+TEST_MYSQL_DSN='root:password@tcp(127.0.0.1:3306)/newapi_rc46_test?charset=utf8mb4' \
+TEST_POSTGRES_DSN='postgresql://user:password@127.0.0.1:5432/newapi_rc46_test' \
+./scripts/rc46-db-matrix.sh
+```
+
+脚本会执行迁移、索引、数据保留和二次幂等迁移测试；缺少任一外部 DSN 会返回失败，不会把跳过的数据库当作通过。
+
 API smoke 需要显式传入隔离环境地址和临时 key：
 
 ```bash
