@@ -30,6 +30,8 @@ For commercial licensing, please contact support@quantumnous.com
 @import './theme.css';
 @import './theme-presets.css';
 @import './hema-user.css';
+@import './hema-catalog-refinement.css';
+@import './hema-home-integration.css';
 
 @layer base {
   :root {

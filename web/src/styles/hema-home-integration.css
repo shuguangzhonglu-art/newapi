@@ -1,0 +1,760 @@
+/* The same Hema palette, from a monumental machine to a quiet model catalog. */
+.hema-integrated-home-shell .hema-turing-home {
+  padding-top: 4rem;
+  color: var(--hema-ink);
+  background: var(--hema-surface);
+}
+.hema-integrated-home-shell .hema-turing-journey {
+  position: relative;
+  height: 310svh;
+  background: #101c14;
+}
+.hema-integrated-home-shell .hema-turing-stage {
+  --turing-copy-opacity: 1;
+  position: sticky;
+  top: 4rem;
+  height: calc(100svh - 4rem);
+  min-height: 24rem;
+  overflow: hidden;
+  isolation: isolate;
+  color: #edf0e6;
+  background: #101c14;
+}
+.hema-integrated-home-shell .hema-turing-scene,
+.hema-integrated-home-shell .hema-turing-vignette {
+  position: absolute;
+  inset: 0;
+}
+.hema-integrated-home-shell .hema-turing-scene-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+  touch-action: pan-y pinch-zoom;
+}
+.hema-integrated-home-shell .hema-turing-scene-canvas[hidden] {
+  display: none;
+}
+.hema-integrated-home-shell .hema-turing-vignette {
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, #07160f8c 0%, #07160f29 33%, transparent 59%),
+    linear-gradient(0deg, #08180ed9 0%, transparent 21%);
+}
+.hema-integrated-home-shell .hema-turing-skip {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 10;
+  transform: translateY(-8rem);
+  padding: 0.65rem 1rem;
+  background: #edf0e6;
+  color: #17241d;
+  font-size: 13px;
+}
+.hema-integrated-home-shell .hema-turing-skip:focus {
+  transform: none;
+}
+.hema-integrated-home-shell .hema-turing-hero-copy {
+  position: absolute;
+  top: 26%;
+  left: clamp(1.5rem, 5.2vw, 6rem);
+  z-index: 2;
+  width: min(43rem, 47%);
+  opacity: var(--turing-copy-opacity);
+  pointer-events: none;
+}
+.hema-integrated-home-shell .hema-turing-eyebrow,
+.hema-integrated-home-shell .hema-turing-kicker {
+  font-size: 10px;
+  line-height: 1.5;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.hema-integrated-home-shell .hema-turing-hero-copy .hema-turing-eyebrow {
+  margin-bottom: 1.6rem;
+  color: #d4dcc3;
+}
+.hema-integrated-home-shell .hema-turing-hero-copy h1 {
+  margin: 0;
+  color: #edf0e6;
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: clamp(2.8rem, 5.6vw, 6.6rem);
+  font-weight: 400;
+  line-height: 1.04;
+  letter-spacing: -0.055em;
+}
+.hema-integrated-home-shell .hema-turing-hero-copy h1 em {
+  font-weight: 400;
+}
+.hema-integrated-home-shell .hema-turing-hero-lead {
+  margin: 1.5rem 0 0;
+  color: #d4dccb;
+  font-size: clamp(12px, 1.1vw, 15px);
+  line-height: 1.7;
+}
+.hema-integrated-home-shell .hema-turing-hero-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: 2.25rem;
+  pointer-events: auto;
+}
+.hema-integrated-home-shell .hema-turing-stage [data-slot='button'] {
+  box-shadow: none;
+  font-weight: 450;
+}
+.hema-integrated-home-shell .hema-turing-stage .hema-turing-primary {
+  height: 44px;
+  padding-inline: 1.2rem;
+  gap: 1.5rem;
+  background: #edf0e6;
+  color: #17241d;
+  border: 1px solid #edf0e6;
+  font-size: 12px;
+}
+.hema-integrated-home-shell .hema-turing-stage .hema-turing-primary:hover {
+  background: #dce4cc;
+}
+.hema-integrated-home-shell .hema-turing-stage .hema-turing-secondary {
+  height: 44px;
+  gap: 0.75rem;
+  border-color: transparent;
+  background: transparent;
+  color: #e1e7d6;
+  font-size: 12px;
+}
+.hema-integrated-home-shell
+  .hema-turing-stage[data-inspecting='true']
+  .hema-turing-hero-copy {
+  opacity: 0;
+}
+.hema-integrated-home-shell .hema-turing-loading {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 60%;
+  transform: translate(-50%, -50%);
+  color: #d7e0c4;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+.hema-integrated-home-shell .hema-turing-scene-error {
+  position: absolute;
+  z-index: 5;
+  bottom: 7rem;
+  left: clamp(1.5rem, 5.2vw, 6rem);
+  max-width: 28rem;
+  color: #edf0e6;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.hema-integrated-home-shell .hema-turing-scene-error [data-slot='button'] {
+  margin-top: 0.75rem;
+  color: #edf0e6;
+  border-color: #d6dfc84d;
+  background: transparent;
+}
+.hema-integrated-home-shell .hema-turing-stages {
+  position: absolute;
+  right: clamp(0.75rem, 2.3vw, 2.8rem);
+  top: 35%;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.hema-integrated-home-shell .hema-turing-stages [data-slot='button'] {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  gap: 0.6rem;
+  color: #b2c0ab;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+.hema-integrated-home-shell .hema-turing-stages [data-slot='button'] span {
+  opacity: 0;
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+.hema-integrated-home-shell .hema-turing-stages [data-slot='button'] i {
+  width: 1px;
+  height: 22px;
+  background: currentColor;
+  opacity: 0.4;
+}
+.hema-integrated-home-shell .hema-turing-stages [aria-current='step'],
+.hema-integrated-home-shell .hema-turing-stages [data-slot='button']:hover,
+.hema-integrated-home-shell
+  .hema-turing-stages
+  [data-slot='button']:focus-visible {
+  color: #f4f4e6;
+}
+.hema-integrated-home-shell .hema-turing-stages [aria-current='step'] span,
+.hema-integrated-home-shell .hema-turing-stages [data-slot='button']:hover span,
+.hema-integrated-home-shell
+  .hema-turing-stages
+  [data-slot='button']:focus-visible
+  span,
+.hema-integrated-home-shell .hema-turing-stages [aria-current='step'] i {
+  opacity: 1;
+}
+.hema-integrated-home-shell .hema-turing-part {
+  position: absolute;
+  z-index: 5;
+  bottom: 7rem;
+  right: clamp(1.5rem, 5.2vw, 6rem);
+  width: min(21rem, 85%);
+  padding: 1.6rem;
+  border: 1px solid #c0cfac4d;
+  background: #14251ced;
+  backdrop-filter: blur(16px);
+}
+.hema-integrated-home-shell .hema-turing-part .hema-turing-part-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  color: #edf0e6;
+  background: transparent;
+  border: 0;
+}
+.hema-integrated-home-shell .hema-turing-part h2 {
+  margin: 1rem 0 0.75rem;
+  color: #edf0e6;
+  font-size: 22px;
+  font-weight: 450;
+  line-height: 1.3;
+}
+.hema-integrated-home-shell .hema-turing-part > p:not(.hema-turing-eyebrow) {
+  color: #ccd6bf;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.hema-integrated-home-shell .hema-turing-part > span {
+  display: block;
+  margin-top: 1rem;
+  color: #b6c5a3;
+  font-size: 10px;
+}
+.hema-integrated-home-shell .hema-turing-bottom {
+  position: absolute;
+  z-index: 3;
+  bottom: 1.6rem;
+  left: clamp(1.5rem, 5.2vw, 6rem);
+  right: clamp(1.5rem, 5.2vw, 6rem);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  pointer-events: none;
+}
+.hema-integrated-home-shell .hema-turing-caption {
+  max-width: 34%;
+  min-height: 2.25rem;
+}
+.hema-integrated-home-shell .hema-turing-caption > span {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: #b5c4a5;
+}
+.hema-integrated-home-shell .hema-turing-caption > p {
+  margin: 0.5rem 0 0;
+  color: #e0e7d6;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.hema-integrated-home-shell .hema-turing-stage .hema-turing-scroll {
+  pointer-events: auto;
+  height: 40px;
+  padding: 0;
+  gap: 1rem;
+  font-size: 10px;
+  background: transparent;
+  color: #e0e7d6;
+  border: 0;
+}
+.hema-integrated-home-shell .hema-turing-status {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: #d8e2ca;
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+.hema-integrated-home-shell .hema-turing-status [data-slot='button'] {
+  pointer-events: auto;
+  color: #d8e2ca;
+  border: 1px solid #d8e2ca38;
+  background: transparent;
+}
+.hema-integrated-home-shell .hema-turing-assembly-meter {
+  width: 2.5rem;
+  height: 1px;
+  background: #d8e2ca40;
+}
+.hema-integrated-home-shell .hema-turing-assembly-meter > span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: #d8e2ca;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.hema-integrated-home-shell .hema-turing-journey[data-reduced-motion='true'],
+.hema-integrated-home-shell .hema-turing-journey[data-scene-failed='true'] {
+  height: auto;
+}
+.hema-integrated-home-shell
+  .hema-turing-journey[data-reduced-motion='true']
+  .hema-turing-stage,
+.hema-integrated-home-shell
+  .hema-turing-journey[data-scene-failed='true']
+  .hema-turing-stage {
+  position: relative;
+  top: 0;
+}
+.hema-integrated-home-shell .hema-turing-platform {
+  background: var(--hema-surface);
+  color: var(--hema-ink);
+}
+.hema-integrated-home-shell .hema-turing-platform-section,
+.hema-integrated-home-shell .hema-turing-legacy,
+.hema-integrated-home-shell .hema-turing-platform-footer {
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: clamp(1.5rem, 6vw, 6rem);
+}
+.hema-integrated-home-shell .hema-turing-platform-section {
+  padding-block: 6rem;
+  scroll-margin-top: 5rem;
+}
+.hema-integrated-home-shell .hema-turing-kicker {
+  color: var(--hema-signal);
+  margin-bottom: 1.2rem;
+}
+.hema-integrated-home-shell .hema-turing-platform-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 3rem;
+  margin-bottom: 3rem;
+}
+.hema-integrated-home-shell .hema-turing-platform h2 {
+  max-width: 38rem;
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: clamp(1.8rem, 3vw, 3rem);
+  font-weight: 450;
+  letter-spacing: -0.045em;
+  line-height: 1.25;
+}
+.hema-integrated-home-shell .hema-turing-platform-heading > p,
+.hema-integrated-home-shell
+  .hema-turing-connect-copy
+  > p:not(.hema-turing-kicker) {
+  max-width: 23rem;
+  color: var(--hema-muted);
+  font-size: 13px;
+  line-height: 1.9;
+}
+.hema-integrated-home-shell .hema-turing-model-list {
+  border-top: 1px solid var(--hema-line);
+}
+.hema-integrated-home-shell .hema-turing-model-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 2rem;
+  padding-block: 1.75rem;
+  border-bottom: 1px solid var(--hema-line);
+}
+.hema-integrated-home-shell .hema-turing-model-identity {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  min-width: 0;
+}
+.hema-integrated-home-shell .hema-turing-model-icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  color: var(--hema-ink);
+}
+.hema-integrated-home-shell .hema-turing-model-identity > div {
+  min-width: 0;
+}
+.hema-integrated-home-shell .hema-turing-model-identity h3 {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 550;
+  letter-spacing: -0.02em;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.hema-integrated-home-shell
+  .hema-turing-model-identity
+  .hema-turing-model-name {
+  padding: 0;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  white-space: normal;
+  justify-content: flex-start;
+}
+.hema-integrated-home-shell .hema-turing-model-identity p {
+  color: var(--hema-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.hema-integrated-home-shell
+  .hema-turing-model-identity
+  .hema-turing-model-description {
+  margin-top: 0.5rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 12px;
+}
+.hema-integrated-home-shell .hema-turing-model-price {
+  min-width: 0;
+}
+.hema-integrated-home-shell .hema-turing-model-price .font-mono {
+  font-family: var(--font-sans);
+}
+.hema-integrated-home-shell .hema-turing-model-row .hema-turing-model-detail {
+  border: 0;
+  background: transparent;
+}
+.hema-integrated-home-shell .hema-turing-platform-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-top: 1.25rem;
+}
+.hema-integrated-home-shell .hema-turing-platform-foot > span {
+  font-size: 11px;
+  color: var(--hema-muted);
+}
+.hema-integrated-home-shell .hema-turing-platform-foot [data-slot='button'] {
+  border: 0;
+  background: transparent;
+  padding-right: 0;
+  gap: 1.25rem;
+  font-size: 12px;
+}
+.hema-integrated-home-shell .hema-turing-connect {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 6rem);
+  align-items: center;
+  padding-top: 2rem;
+}
+.hema-integrated-home-shell
+  .hema-turing-connect-copy
+  > p:not(.hema-turing-kicker) {
+  margin-top: 1.5rem;
+}
+.hema-integrated-home-shell .hema-turing-connect-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+.hema-integrated-home-shell .hema-turing-connect-actions [data-slot='button'] {
+  font-size: 12px;
+  min-height: 40px;
+  gap: 1rem;
+}
+.hema-integrated-home-shell .hema-turing-connect-code {
+  min-width: 0;
+}
+.hema-integrated-home-shell .hema-turing-connect-code pre {
+  overflow-x: auto;
+  padding: 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.9;
+}
+.hema-integrated-home-shell .hema-turing-code-note {
+  margin-top: 0.75rem;
+  color: var(--hema-muted);
+  font-size: 10px;
+}
+.hema-integrated-home-shell .hema-turing-connect-empty {
+  padding: 2rem;
+  border-block: 1px solid var(--hema-line);
+  color: var(--hema-muted);
+  font-size: 13px;
+  line-height: 1.8;
+}
+.hema-integrated-home-shell .hema-turing-connect-empty p + p {
+  margin-top: 0.75rem;
+  font-size: 12px;
+}
+.hema-integrated-home-shell .hema-turing-legacy {
+  display: grid;
+  grid-template-columns: minmax(0, 0.45fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 3rem;
+  padding-block: 5rem;
+  border-top: 1px solid var(--hema-line);
+}
+.hema-integrated-home-shell .hema-turing-legacy-mark {
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: clamp(7rem, 12vw, 13rem);
+  line-height: 0.9;
+  letter-spacing: -0.08em;
+  color: var(--hema-signal);
+}
+.hema-integrated-home-shell .hema-turing-legacy [data-slot='button'] {
+  padding-left: 0;
+  border: 0;
+  background: transparent;
+  margin-top: 1.75rem;
+  gap: 1rem;
+  font-size: 12px;
+}
+.hema-integrated-home-shell .hema-turing-platform-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  padding-block: 1.5rem 2rem;
+  border-top: 1px solid var(--hema-line);
+  color: var(--hema-muted);
+  font-size: 10px;
+  line-height: 1.7;
+}
+.hema-integrated-home-shell .hema-turing-platform-footer a {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 1rem;
+}
+.hema-integrated-home-shell .hema-turing-platform-footer svg {
+  width: 14px;
+}
+.hema-integrated-home-shell
+  .hema-turing-stage
+  :is(a, button, canvas):focus-visible {
+  outline: 2px solid #e9eccf;
+  outline-offset: 4px;
+}
+.hema-integrated-home-shell
+  .hema-turing-platform
+  :is(a, button, pre):focus-visible {
+  outline: 2px solid var(--hema-signal);
+  outline-offset: 4px;
+}
+@media (max-width: 1000px) {
+  .hema-integrated-home-shell .hema-turing-hero-copy {
+    width: 55%;
+  }
+  .hema-integrated-home-shell .hema-turing-hero-copy h1 {
+    font-size: clamp(2.8rem, 6vw, 5rem);
+  }
+  .hema-integrated-home-shell .hema-turing-status {
+    gap: 0.45rem;
+  }
+  .hema-integrated-home-shell .hema-turing-parts-count {
+    display: none;
+  }
+  .hema-integrated-home-shell .hema-turing-model-row {
+    gap: 1rem;
+  }
+  .hema-integrated-home-shell .hema-turing-platform-heading {
+    gap: 2rem;
+  }
+}
+@media (max-width: 639px) {
+  .hema-integrated-home-shell .hema-turing-journey {
+    height: 250svh;
+  }
+  .hema-integrated-home-shell .hema-turing-stage {
+    min-height: 31rem;
+  }
+  .hema-integrated-home-shell .hema-turing-vignette {
+    background:
+      linear-gradient(180deg, #07160f8c 0%, #07160f33 35%, transparent 58%),
+      linear-gradient(0deg, #08180ed9 0%, transparent 22%);
+  }
+  .hema-integrated-home-shell .hema-turing-hero-copy {
+    top: 11%;
+    left: 7%;
+    width: 86%;
+  }
+  .hema-integrated-home-shell .hema-turing-hero-copy h1 {
+    font-size: clamp(2.5rem, 10vw, 4rem);
+    line-height: 1.08;
+  }
+  .hema-integrated-home-shell .hema-turing-hero-copy .hema-turing-eyebrow {
+    font-size: 9px;
+    margin-bottom: 1rem;
+  }
+  .hema-integrated-home-shell .hema-turing-hero-lead {
+    margin-top: 1rem;
+    font-size: 11px;
+  }
+  .hema-integrated-home-shell .hema-turing-hero-actions {
+    margin-top: 1.5rem;
+    gap: 0.35rem;
+  }
+  .hema-integrated-home-shell .hema-turing-stage .hema-turing-primary,
+  .hema-integrated-home-shell .hema-turing-stage .hema-turing-secondary {
+    font-size: 10px;
+    gap: 0.75rem;
+  }
+  .hema-integrated-home-shell .hema-turing-stages {
+    right: 0.25rem;
+    top: 43%;
+  }
+  .hema-integrated-home-shell .hema-turing-stages [data-slot='button'] {
+    width: 36px;
+    gap: 0.4rem;
+  }
+  .hema-integrated-home-shell .hema-turing-bottom {
+    bottom: 1rem;
+    left: 7%;
+    right: 7%;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .hema-integrated-home-shell .hema-turing-caption {
+    max-width: 68%;
+    flex: 1;
+  }
+  .hema-integrated-home-shell .hema-turing-caption > p {
+    font-size: 9px;
+  }
+  .hema-integrated-home-shell .hema-turing-stage .hema-turing-scroll {
+    order: 3;
+    justify-content: center;
+    width: 100%;
+    height: 34px;
+    font-size: 9px;
+  }
+  .hema-integrated-home-shell .hema-turing-status {
+    font-size: 8px;
+  }
+  .hema-integrated-home-shell .hema-turing-assembly-meter {
+    display: none;
+  }
+  .hema-integrated-home-shell .hema-turing-part {
+    bottom: 8rem;
+    right: 7%;
+    width: 86%;
+    padding: 1.25rem;
+  }
+  .hema-integrated-home-shell .hema-turing-part h2 {
+    font-size: 20px;
+  }
+  .hema-integrated-home-shell .hema-turing-scene-error {
+    bottom: 9rem;
+    left: 7%;
+    right: 7%;
+    font-size: 12px;
+  }
+  .hema-integrated-home-shell .hema-turing-platform-section {
+    padding-block: 3.5rem;
+  }
+  .hema-integrated-home-shell .hema-turing-platform-heading {
+    display: block;
+    margin-bottom: 2rem;
+  }
+  .hema-integrated-home-shell .hema-turing-platform-heading > p {
+    margin-top: 1.25rem;
+    font-size: 12px;
+  }
+  .hema-integrated-home-shell .hema-turing-model-row {
+    grid-template-columns: minmax(0, 1fr) 40px;
+    gap: 1rem;
+    padding-block: 1.5rem;
+  }
+  .hema-integrated-home-shell .hema-turing-model-identity {
+    grid-column: 1;
+    gap: 0.75rem;
+  }
+  .hema-integrated-home-shell .hema-turing-model-identity h3 {
+    font-size: 15px;
+  }
+  .hema-integrated-home-shell .hema-turing-model-price {
+    grid-column: 1;
+    padding-left: 3rem;
+  }
+  .hema-integrated-home-shell .hema-turing-model-detail {
+    grid-column: 2;
+    grid-row: 1 / 3;
+  }
+  .hema-integrated-home-shell .hema-turing-platform-foot {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .hema-integrated-home-shell .hema-turing-platform-foot [data-slot='button'] {
+    padding-left: 0;
+  }
+  .hema-integrated-home-shell .hema-turing-connect {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+    padding-top: 0.75rem;
+  }
+  .hema-integrated-home-shell .hema-turing-connect-code pre {
+    padding: 1rem;
+    font-size: 10px;
+  }
+  .hema-integrated-home-shell .hema-turing-legacy {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+    padding-block: 3.5rem;
+  }
+  .hema-integrated-home-shell .hema-turing-legacy-mark {
+    font-size: 5rem;
+  }
+  .hema-integrated-home-shell .hema-turing-platform-footer {
+    display: block;
+    padding-block: 1.5rem;
+  }
+  .hema-integrated-home-shell .hema-turing-platform-footer a {
+    margin-top: 1rem;
+  }
+}
+@media (max-height: 600px) and (min-width: 640px) {
+  .hema-integrated-home-shell .hema-turing-hero-copy {
+    top: 15%;
+  }
+  .hema-integrated-home-shell .hema-turing-hero-copy h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+  }
+  .hema-integrated-home-shell .hema-turing-hero-copy .hema-turing-eyebrow {
+    margin-bottom: 0.6rem;
+  }
+  .hema-integrated-home-shell .hema-turing-hero-lead {
+    margin-top: 0.75rem;
+  }
+  .hema-integrated-home-shell .hema-turing-hero-actions {
+    margin-top: 1rem;
+  }
+  .hema-integrated-home-shell .hema-turing-bottom {
+    bottom: 0.75rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hema-integrated-home-shell .hema-turing-home * {
+    scroll-behavior: auto !important;
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+  }
+}

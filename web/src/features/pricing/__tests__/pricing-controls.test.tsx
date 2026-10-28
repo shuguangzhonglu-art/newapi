@@ -25,6 +25,7 @@ import {
   PricingToolbar,
   type PricingToolbarProps,
 } from '../components/pricing-toolbar'
+import { SearchBar } from '../components/search-bar'
 import type { PricingModel } from '../types'
 
 function toolbarProps(): PricingToolbarProps {
@@ -61,6 +62,115 @@ function toolbarProps(): PricingToolbarProps {
 }
 
 describe('pricing controls', () => {
+  it('keeps recharge-adjusted pricing visible when the settings popover is closed', () => {
+    render(<PricingToolbar {...toolbarProps()} showRechargePrice />)
+    expect(
+      screen.getByRole('button', { name: 'Price display settings' })
+    ).toHaveTextContent('Recharge-adjusted')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+  it('announces the selected pricing group in its menu', async () => {
+    const user = userEvent.setup()
+    render(<PricingToolbar {...toolbarProps()} groupFilter='premium' />)
+    await user.click(
+      screen.getByRole('button', { name: 'Choose pricing group' })
+    )
+    expect(
+      screen.getByRole('menuitemradio', { name: 'premium' })
+    ).toHaveAttribute('aria-checked', 'true')
+    expect(
+      screen.getByRole('menuitemradio', { name: 'default' })
+    ).toHaveAttribute('aria-checked', 'false')
+  })
+  it('returns focus to search after clearing its text', async () => {
+    const onClear = vi.fn()
+    const user = userEvent.setup()
+    render(<SearchBar value='claude' onChange={vi.fn()} onClear={onClear} />)
+    await user.click(screen.getByRole('button', { name: 'Clear search' }))
+    expect(onClear).toHaveBeenCalledOnce()
+    expect(
+      screen.getByRole('searchbox', { name: 'Search models' })
+    ).toHaveFocus()
+  })
+  it('keeps vendors visible while advanced desktop filters start collapsed', async () => {
+    const props = toolbarProps()
+    const user = userEvent.setup()
+    render(<PricingSidebar {...props} startCollapsed />)
+    expect(screen.getByRole('button', { name: 'All Vendors' })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    )
+    const groups = screen.getByRole('button', { name: 'Groups' })
+    expect(groups).toHaveAttribute('aria-expanded', 'false')
+    await user.click(groups)
+    expect(screen.getByRole('button', { name: /default/ })).toBeVisible()
+  })
+  it('clears the visible search independently of active filters', async () => {
+    const props = toolbarProps()
+    const onClearSearch = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <PricingToolbar
+        {...props}
+        searchInput='vision'
+        onClearSearch={onClearSearch}
+      />
+    )
+    await user.click(screen.getByRole('button', { name: 'Clear search' }))
+    expect(onClearSearch).toHaveBeenCalledOnce()
+    expect(props.onClearFilters).not.toHaveBeenCalled()
+  })
+  it('removes an individual active filter without clearing the other selections', async () => {
+    const props = toolbarProps()
+    const user = userEvent.setup()
+    render(
+      <PricingToolbar
+        {...props}
+        vendorFilter='DeepSeek'
+        groupFilter='premium'
+        hasActiveFilters
+        activeFilterCount={2}
+      />
+    )
+    const chips = screen.getByRole('group', { name: 'Filters active' })
+    await user.click(
+      within(chips).getByRole('button', {
+        name: 'Remove filter: Vendor: DeepSeek',
+      })
+    )
+    expect(props.onVendorChange).toHaveBeenCalledWith('all')
+    expect(props.onGroupChange).not.toHaveBeenCalled()
+    expect(props.onClearFilters).not.toHaveBeenCalled()
+    expect(
+      within(chips).getByRole('button', {
+        name: 'Remove filter: Groups: premium',
+      })
+    ).toBeVisible()
+  })
+
+  it('closes the mobile filter sheet with its result button while preserving filters', async () => {
+    const props = toolbarProps()
+    const user = userEvent.setup()
+    render(
+      <PricingToolbar
+        {...props}
+        groupFilter='premium'
+        hasActiveFilters
+        activeFilterCount={1}
+      />
+    )
+    await user.click(screen.getByRole('button', { name: /^Filter\s*1$/ }))
+    const sheet = await screen.findByRole('dialog', { name: 'Filter' })
+    await user.click(
+      within(sheet).getByRole('button', { name: 'View 2 models' })
+    )
+    expect(props.onClearFilters).not.toHaveBeenCalled()
+    expect(props.onGroupChange).not.toHaveBeenCalled()
+    expect(
+      await screen.findByRole('button', { name: /^Filter\s*1$/ })
+    ).toHaveFocus()
+  })
+
   it('counts each model once per filter and updates counts when the catalog changes', () => {
     const props = toolbarProps()
     const base: PricingModel = {
@@ -143,10 +253,15 @@ describe('pricing controls', () => {
     const props = toolbarProps()
     const user = userEvent.setup()
     const { rerender } = render(<PricingToolbar {...props} />)
-    await user.click(screen.getByRole('button', { name: '/1K' }))
+    await user.click(
+      screen.getByRole('button', { name: 'Price display settings' })
+    )
+    await user.click(
+      screen.getByRole('button', { name: 'Per thousand tokens' })
+    )
     expect(props.onTokenUnitChange).toHaveBeenCalledWith('K')
     rerender(<PricingToolbar {...props} tokenUnit='K' />)
-    const selected = screen.getByRole('button', { name: '/1K' })
+    const selected = screen.getByRole('button', { name: 'Per thousand tokens' })
     expect(selected).toHaveAttribute('aria-pressed', 'true')
     await user.click(selected)
     expect(selected).toHaveAttribute('aria-pressed', 'true')
@@ -157,6 +272,9 @@ describe('pricing controls', () => {
     const props = toolbarProps()
     const user = userEvent.setup()
     const { rerender } = render(<PricingToolbar {...props} />)
+    await user.click(
+      screen.getByRole('button', { name: 'Price display settings' })
+    )
     await user.click(screen.getByRole('button', { name: 'Recharge' }))
     expect(props.onRechargePriceChange).toHaveBeenCalledWith(true)
     rerender(<PricingToolbar {...props} showRechargePrice />)
@@ -192,18 +310,18 @@ describe('pricing controls', () => {
     render(<PricingToolbar {...props} />)
     await user.click(screen.getByRole('button', { name: 'Name' }))
     await user.click(
-      screen.getByRole('menuitem', { name: 'Input Price: Low to High' })
+      screen.getByRole('menuitemradio', { name: 'Input Price: Low to High' })
     )
     expect(props.onSortChange).toHaveBeenCalledWith('input-price-low')
   })
 
-  it('opens mobile filters from the left, selects a group, and restores focus on close', async () => {
+  it('opens filters, selects a group, and restores focus on close', async () => {
     const props = toolbarProps()
     const user = userEvent.setup()
     const { rerender } = render(<PricingToolbar {...props} />)
     await user.click(screen.getByRole('button', { name: 'Filter' }))
     const dialog = await screen.findByRole('dialog', { name: 'Filter' })
-    expect(dialog).toHaveAttribute('data-side', 'left')
+    expect(dialog).toHaveAttribute('data-side', 'right')
     expect(within(dialog).getByRole('button', { name: 'Reset' })).toBeDisabled()
     await user.click(within(dialog).getByRole('button', { name: /premium/ }))
     expect(props.onGroupChange).toHaveBeenCalledWith('premium')

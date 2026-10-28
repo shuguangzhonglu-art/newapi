@@ -16,20 +16,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import {
-  act,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createJSONStorage } from 'zustand/middleware'
 
-import { api } from '@/lib/api'
 import {
   DEFAULT_CURRENCY_CONFIG,
   useSystemConfigStore,
@@ -38,6 +29,8 @@ import {
 import { CachedPriceCell } from '../components/cached-price-cell'
 import { ModelCard } from '../components/model-card'
 import { ModelCardGrid } from '../components/model-card-grid'
+import { ModelPriceCell } from '../components/model-price-cell'
+import { PricingTable } from '../components/pricing-table'
 import type { PricingModel } from '../types'
 
 function pricingModel(overrides: Partial<PricingModel> = {}): PricingModel {
@@ -52,8 +45,6 @@ function pricingModel(overrides: Partial<PricingModel> = {}): PricingModel {
     ...overrides,
   }
 }
-
-let queryClient: QueryClient
 const originalStorage = useSystemConfigStore.persist.getOptions().storage
 beforeEach(() => {
   const storage = new Map<string, string>()
@@ -73,76 +64,30 @@ beforeEach(() => {
   useSystemConfigStore.getState().setConfig({
     currency: { ...DEFAULT_CURRENCY_CONFIG, quotaDisplayType: 'USD' },
   })
-  queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: 0 } },
-  })
 })
 afterEach(() => {
-  queryClient.clear()
   useSystemConfigStore
     .getState()
     .setConfig({ currency: { ...DEFAULT_CURRENCY_CONFIG } })
   vi.useRealTimers()
+  vi.restoreAllMocks()
   vi.unstubAllGlobals()
   useSystemConfigStore.persist.setOptions({ storage: originalStorage })
 })
 
-describe('model cards', () => {
-  it('shows separate generic and image cache prices including a free image cache', () => {
-    render(
-      <CachedPriceCell
-        model={pricingModel({
-          billing_mode: 'tiered_expr',
-          billing_expr:
-            'tier("standard", p * 5 + cr * 1.25 + img * 8 + img_cr * 0 + c * 30)',
-        })}
-        options={{ tokenUnit: 'M' }}
-      />
-    )
-    expect(screen.getByText('Cache Read').parentElement).toHaveTextContent(
-      '$1.25'
-    )
-    expect(screen.getByText('Image Cache').parentElement).toHaveTextContent(
-      '$0'
-    )
+describe('catalog entries', () => {
+  it('opens details once from the model title with the keyboard', async () => {
+    const onClick = vi.fn(),
+      user = userEvent.setup()
+    render(<ModelCard model={pricingModel()} onClick={onClick} />)
+    screen.getByRole('button', { name: 'example-model' }).focus()
+    await user.keyboard('{Enter}')
+    expect(onClick).toHaveBeenCalledOnce()
+    expect(onClick).toHaveBeenCalledWith('example-model')
   })
-  it('shows fixed prices per request in both token display units', () => {
-    const model = pricingModel({
-      billing_mode: 'tiered_expr',
-      billing_expr: 'tier("request", fixed(0.01))',
-    })
-    const { rerender } = render(
-      <ModelCard model={model} onClick={vi.fn()} tokenUnit='K' />
-    )
-    expect(screen.getByText('$0.01')).toBeVisible()
-    expect(screen.getByText('/ request')).toBeVisible()
-    rerender(<ModelCard model={model} onClick={vi.fn()} tokenUnit='M' />)
-    expect(screen.getByText('$0.01')).toBeVisible()
-    expect(screen.queryByText('/ 1M')).not.toBeInTheDocument()
-  })
-  it('updates the current time tier at a minute boundary and after returning to the page', () => {
-    vi.useFakeTimers()
-    vi.setSystemTime(new Date('2026-09-07T08:59:59+08:00'))
-    const model = pricingModel({
-      billing_mode: 'tiered_expr',
-      billing_expr:
-        'hour("Asia/Shanghai") >= 9 && hour("Asia/Shanghai") < 12 ? tier("peak", p * 3 + c * 9) : tier("off_peak", p * 1.5 + c * 4.5)',
-    })
-    render(<ModelCard model={model} onClick={vi.fn()} tokenUnit='M' />)
-    expect(screen.getByText('Current period price')).toBeVisible()
-    expect(screen.getByText('$1.5')).toBeVisible()
-    act(() => vi.advanceTimersByTime(1000))
-    expect(screen.getByText('$3')).toBeVisible()
-    act(() => {
-      vi.setSystemTime(new Date('2026-09-07T12:00:00+08:00'))
-      fireEvent(document, new Event('visibilitychange'))
-    })
-    expect(screen.getByText('$1.5')).toBeVisible()
-  })
-
-  it('copies the complete long model name without opening details', async () => {
-    const user = userEvent.setup()
-    const onClick = vi.fn()
+  it('copies the complete long name without opening details', async () => {
+    const user = userEvent.setup(),
+      onClick = vi.fn()
     const name = 'provider/model-with-a-long-name-and-a-version-suffix-20260906'
     render(
       <ModelCard model={pricingModel({ model_name: name })} onClick={onClick} />
@@ -155,195 +100,46 @@ describe('model cards', () => {
     expect(onClick).toHaveBeenCalledOnce()
     expect(onClick).toHaveBeenCalledWith(name)
   })
-
-  it('shows missing values without placeholder bars when metrics are unavailable', () => {
-    render(<ModelCard model={pricingModel()} onClick={vi.fn()} />)
-    const metrics = screen.getByLabelText(
-      'Performance metrics for the last 24 hours'
-    )
-    expect(within(metrics).getAllByText('—')).toHaveLength(2)
-    expect(within(metrics).getByText('—s')).toBeVisible()
-    expect(within(metrics).getByText('—t/s')).toBeVisible()
-    expect(within(metrics).queryByText(/100/)).not.toBeInTheDocument()
-    const statusStrip = within(metrics).getByRole('img', {
-      name: 'No performance data available',
-    })
-    expect(statusStrip).toHaveTextContent('—')
-    expect(statusStrip.querySelectorAll('[aria-hidden]')).toHaveLength(0)
-    expect(screen.getByText('No description available.')).toBeVisible()
-    expect(screen.getByRole('button', { name: 'Details' })).toBeEnabled()
-  })
-
-  it('uses fixed spacing between available status samples', () => {
+  it('shows supplied tags with overflow instead of inferred capabilities or telemetry', () => {
     render(
       <ModelCard
-        model={pricingModel()}
-        onClick={vi.fn()}
-        perf={{
-          avg_latency_ms: 1200,
-          avg_tps: 42,
-          success_rate: 50,
-          recent_success_series: [
-            { ts: 3600, success_rate: 100 },
-            { ts: 18000, success_rate: 0 },
-          ],
-        }}
-      />
-    )
-    const statusStrip = screen.getByRole('img', {
-      name: 'Success rate',
-    })
-    expect(statusStrip).toHaveClass('gap-px')
-    expect(statusStrip).not.toHaveClass('justify-between')
-  })
-
-  it('shows server history for idle models while preserving the current window metrics', async () => {
-    const request = vi.spyOn(api, 'get').mockResolvedValue({
-      data: {
-        success: true,
-        data: {
-          models: [
-            {
-              model_name: 'active-model',
-              avg_latency_ms: 1200,
-              avg_tps: 42,
-              success_rate: 99.8,
-              recent_success_series: [{ ts: 7200, success_rate: 0 }],
-            },
-          ],
-          recent_success_series: {
-            'active-model': [{ ts: 3600, success_rate: 100 }],
-            'idle-model': [
-              { ts: 3600, success_rate: 0 },
-              { ts: 7200, success_rate: 100 },
-            ],
-          },
-        },
-      },
-    })
-    render(
-      <QueryClientProvider client={queryClient}>
-        <ModelCardGrid
-          models={[
-            pricingModel({ model_name: 'active-model' }),
-            pricingModel({ id: 2, model_name: 'idle-model' }),
-          ]}
-          onModelClick={vi.fn()}
-        />
-      </QueryClientProvider>
-    )
-    await screen.findByText('99.80%')
-    expect(request).toHaveBeenCalledWith('/api/perf-metrics/summary', {
-      params: { hours: 24, recent_model: ['active-model', 'idle-model'] },
-      paramsSerializer: { indexes: null },
-    })
-    const [active, idle] = screen.getAllByLabelText(
-      'Performance metrics for the last 24 hours'
-    )
-    expect(within(active).getByText('1.20s')).toBeVisible()
-    expect(
-      within(active).getByRole('img', { name: 'Success rate' }).children[0]
-    ).toHaveClass('bg-emerald-500')
-    const samples = within(idle).getByRole('img', {
-      name: 'Success rate',
-    }).children
-    expect(samples).toHaveLength(2)
-    expect(samples[0]).toHaveClass('bg-red-500')
-    expect(samples[1]).toHaveClass('bg-emerald-500')
-    expect(within(idle).getByText('—')).toBeVisible()
-    expect(within(idle).getByText('—s')).toBeVisible()
-    expect(within(idle).getByText('—t/s')).toBeVisible()
-  })
-
-  it('keeps group, endpoint and tag overflow counts with their own metadata', () => {
-    const groups = ['default-with-a-long-group-name', 'premium', 'internal']
-    const endpoints = ['openai-response', 'openai', 'claude', 'gemini', 'jina']
-    const tags = [
-      'video-generation',
-      'high-resolution',
-      'fast',
-      'batch',
-      'hd',
-      'pro',
-    ]
-    render(
-      <ModelCard
-        model={pricingModel({
-          enable_groups: groups,
-          supported_endpoint_types: endpoints,
-          tags: tags.join(','),
-        })}
+        model={pricingModel({ tags: 'vision,tools,reasoning,streaming' })}
         onClick={vi.fn()}
       />
     )
-
-    const groupField = screen.getByText('Groups').parentElement
-    const endpointField = screen.getByText('Endpoints').parentElement
-    if (!groupField || !endpointField) {
-      throw new Error('Expected labeled group and endpoint fields')
-    }
-    const tagField = screen.getByRole('group', { name: 'Tags' })
-    expect(within(groupField).getByText(groups[0])).toBeVisible()
-    expect(within(groupField).getByText('+2')).toHaveAttribute(
+    const tags = screen.getByRole('group', { name: 'Tags' })
+    expect(within(tags).getByText('vision, tools')).toHaveAttribute(
       'title',
-      groups.slice(1).join(', ')
+      'vision, tools, reasoning, streaming'
+    )
+    expect(within(tags).getByText('+2')).toHaveAttribute(
+      'title',
+      'reasoning, streaming'
     )
     expect(
-      within(endpointField).getByText('openai-response, openai')
-    ).toHaveAttribute('title', endpoints.join(', '))
-    expect(within(endpointField).getByText('+3')).toBeVisible()
-    expect(
-      within(tagField).getByText('video-generation, high-resolution')
-    ).toHaveAttribute('title', tags.join(', '))
-    expect(within(tagField).getByText('+4')).toBeVisible()
-    expect(
-      within(screen.getByRole('group', { name: 'Pricing' })).getByText(
-        'Token-based'
-      )
-    ).toBeVisible()
+      screen.queryByLabelText('Performance metrics for the last 24 hours')
+    ).not.toBeInTheDocument()
+    expect(screen.queryByText(/128K|99.9/)).not.toBeInTheDocument()
   })
-
-  it('omits metadata fields when the model has no groups, endpoints or tags', () => {
+  it('keeps missing prices explicit instead of presenting a free model', () => {
     render(
       <ModelCard
-        model={pricingModel({ enable_groups: [] })}
+        model={pricingModel({ model_ratio: Number.NaN })}
         onClick={vi.fn()}
       />
     )
-    expect(screen.queryByText('Groups')).not.toBeInTheDocument()
-    expect(screen.queryByText('Endpoints')).not.toBeInTheDocument()
+    expect(screen.getByText('No description available.')).toBeVisible()
+    expect(
+      within(screen.getByRole('group', { name: 'Pricing' })).getAllByText('-')
+    ).toHaveLength(2)
+    expect(screen.queryByText('$0')).not.toBeInTheDocument()
     expect(
       screen.queryByRole('group', { name: 'Tags' })
     ).not.toBeInTheDocument()
   })
-
-  it.each([
-    { success_rate: 0, expected: '0.00%' },
-    { success_rate: 99.8, expected: '99.80%' },
-    { success_rate: Number.NaN, expected: '—' },
-  ])(
-    'shows $expected for the reported request success rate $success_rate',
-    ({ success_rate, expected }) => {
-      render(
-        <ModelCard
-          model={pricingModel()}
-          onClick={vi.fn()}
-          perf={{ avg_latency_ms: 1200, avg_tps: 42, success_rate }}
-        />
-      )
-      const metrics = screen.getByLabelText(
-        'Performance metrics for the last 24 hours'
-      )
-      expect(within(metrics).getAllByText(expected)[0]).toBeVisible()
-      expect(within(metrics).getByText('Status')).toBeVisible()
-      expect(within(metrics).getByText('1.20s')).toBeVisible()
-      expect(within(metrics).getByText('42.0t/s')).toBeVisible()
-    }
-  )
-
-  it('keeps group and recharge pricing correct when changing the token unit, including a free cache price', () => {
+  it('shows group and recharge prices with one readable unit and no currency codes', () => {
     const props = {
-      model: pricingModel({ cache_ratio: 0 }),
+      model: pricingModel(),
       onClick: vi.fn(),
       selectedGroup: 'premium',
       showRechargePrice: true,
@@ -351,28 +147,158 @@ describe('model cards', () => {
       usdExchangeRate: 6,
     }
     const { rerender } = render(<ModelCard {...props} tokenUnit='M' />)
-    expect(screen.getByText('Input').parentElement).toHaveTextContent(
-      /\$3\s*\/\s*1M/
-    )
-    expect(screen.getByText('Output').parentElement).toHaveTextContent(
-      /\$9\s*\/\s*1M/
-    )
-    expect(screen.getByText('Cached').parentElement).toHaveTextContent(
-      /\$0\s*\/\s*1M/
-    )
+    expect(screen.getByText('Input').parentElement).toHaveTextContent('$3')
+    expect(screen.getByText('Output').parentElement).toHaveTextContent('$9')
+    expect(screen.getAllByText('Per million tokens')).toHaveLength(1)
+    expect(screen.getByText('premium')).toBeVisible()
+    expect(screen.queryByText(/CNY|USD/)).not.toBeInTheDocument()
     rerender(<ModelCard {...props} tokenUnit='K' />)
-    expect(screen.getByText('Input').parentElement).toHaveTextContent(
-      /\$0.003\s*\/\s*1K/
-    )
-    expect(screen.getByText('Output').parentElement).toHaveTextContent(
-      /\$0.009\s*\/\s*1K/
-    )
-    expect(screen.getByText('Cached').parentElement).toHaveTextContent(
-      /\$0\s*\/\s*1K/
-    )
+    expect(screen.getByText('Input').parentElement).toHaveTextContent('$0.003')
+    expect(screen.getByText('Output').parentElement).toHaveTextContent('$0.009')
+    expect(screen.getAllByText('Per thousand tokens')).toHaveLength(1)
   })
-
-  it('shows a per-request price with the selected group and recharge multiplier without a token unit', () => {
+  it('labels the unfiltered minimum group price as a starting price', () => {
+    render(
+      <ModelCard
+        model={pricingModel({ group_ratio: { default: 0.5, premium: 3 } })}
+        onClick={vi.fn()}
+      />
+    )
+    expect(screen.getByText('From')).toBeVisible()
+    expect(screen.getByText('Input').parentElement).toHaveTextContent('$1')
+  })
+  it('keeps a free configured price distinct from an unavailable price', () => {
+    render(
+      <ModelCard model={pricingModel({ model_ratio: 0 })} onClick={vi.fn()} />
+    )
+    expect(
+      within(screen.getByRole('group', { name: 'Pricing' })).getAllByText('$0')
+    ).toHaveLength(2)
+  })
+  it.each([undefined, Number.NaN, Number.POSITIVE_INFINITY, -1])(
+    'shows unavailable card and list prices when the selected group multiplier is %s',
+    (ratio) => {
+      const model = pricingModel({
+        group_ratio:
+          ratio === undefined ? { default: 1 } : { default: 1, premium: ratio },
+      })
+      render(
+        <>
+          <ModelCardGrid
+            models={[model]}
+            onModelClick={vi.fn()}
+            selectedGroup='premium'
+          />
+          <PricingTable
+            models={[model]}
+            onModelClick={vi.fn()}
+            selectedGroup='premium'
+          />
+        </>
+      )
+      expect(
+        within(screen.getByRole('group', { name: 'Pricing' })).getByText('—')
+      ).toBeVisible()
+      expect(within(screen.getByRole('table')).getByText('—')).toBeVisible()
+      expect(screen.queryByText(/\$\d|¥\d|CNY|USD/)).not.toBeInTheDocument()
+    }
+  )
+  it('does not advertise a starting price when no enabled group has a valid multiplier', () => {
+    const model = pricingModel({ group_ratio: {} })
+    render(
+      <>
+        <ModelCard model={model} onClick={vi.fn()} />
+        <PricingTable models={[model]} onModelClick={vi.fn()} />
+      </>
+    )
+    expect(screen.getAllByText('—')).toHaveLength(2)
+    expect(screen.queryByText(/\$\d/)).not.toBeInTheDocument()
+  })
+  it.each([
+    { quota_type: 1, model_price: 10 },
+    {
+      billing_mode: 'tiered_expr',
+      billing_expr: 'tier("base", p * 10 + c * 20)',
+    },
+  ])(
+    'keeps request and expression prices unavailable without a group multiplier: %j',
+    (overrides) => {
+      const model = pricingModel({ ...overrides, group_ratio: { default: 1 } })
+      render(
+        <>
+          <ModelCard model={model} onClick={vi.fn()} selectedGroup='premium' />
+          <PricingTable
+            models={[model]}
+            onModelClick={vi.fn()}
+            selectedGroup='premium'
+          />
+        </>
+      )
+      expect(screen.getAllByText('—')).toHaveLength(2)
+      expect(screen.queryByText(/\$\d/)).not.toBeInTheDocument()
+    }
+  )
+  it('keeps a free configured group available in cards and the compact list', () => {
+    const model = pricingModel({ group_ratio: { default: 1, premium: 0 } })
+    render(
+      <>
+        <ModelCard model={model} onClick={vi.fn()} selectedGroup='premium' />
+        <PricingTable
+          models={[model]}
+          onModelClick={vi.fn()}
+          selectedGroup='premium'
+        />
+      </>
+    )
+    expect(
+      within(screen.getByRole('group', { name: 'Pricing' })).getAllByText('$0')
+    ).toHaveLength(2)
+    expect(within(screen.getByRole('table')).getAllByText('$0')).toHaveLength(2)
+    expect(screen.queryByText('—')).not.toBeInTheDocument()
+  })
+  it('keeps legacy administrative price cells unchanged when their model has no group metadata', () => {
+    const model = pricingModel({ group_ratio: {} })
+    const { rerender } = render(<ModelPriceCell model={model} />)
+    expect(screen.getByText('Input').parentElement).toHaveTextContent('2')
+    expect(screen.getByText('Output').parentElement).toHaveTextContent('6')
+    rerender(
+      <ModelPriceCell
+        model={{
+          ...model,
+          billing_mode: 'tiered_expr',
+          billing_expr: 'tier("base", p * 3 + c * 9)',
+        }}
+      />
+    )
+    expect(screen.getByText('Input').parentElement).toHaveTextContent('3')
+    expect(screen.getByText('Output').parentElement).toHaveTextContent('9')
+    expect(model.group_ratio).toEqual({})
+  })
+  it('shows a tier price range instead of presenting the first tier as the lowest price', () => {
+    const model = pricingModel({
+      billing_mode: 'tiered_expr',
+      billing_expr:
+        'len < 1000 ? tier("first", p * 4 + c * 12) : tier("cheaper", p * 2 + c * 6)',
+    })
+    render(
+      <>
+        <ModelCard model={model} onClick={vi.fn()} selectedGroup='default' />
+        <PricingTable
+          models={[model]}
+          onModelClick={vi.fn()}
+          selectedGroup='default'
+        />
+      </>
+    )
+    expect(
+      within(screen.getByRole('group', { name: 'Pricing' })).getByText(
+        '$2 – $4'
+      )
+    ).toBeVisible()
+    expect(within(screen.getByRole('table')).getByText('$2 – $4')).toBeVisible()
+    expect(screen.getAllByText('$6 – $12')).toHaveLength(2)
+  })
+  it('shows a request price with the selected group and no token unit', () => {
     render(
       <ModelCard
         model={pricingModel({ quota_type: 1, model_price: 0.4 })}
@@ -385,12 +311,42 @@ describe('model cards', () => {
       />
     )
     expect(screen.getByText(/\$0.6/)).toHaveTextContent(/\$0.6\s*\/\s*request/)
-    expect(screen.queryByText(/1K|1M/)).not.toBeInTheDocument()
-    expect(screen.getAllByText('Per Request')).toHaveLength(1)
-    expect(screen.queryByText('Per-request')).not.toBeInTheDocument()
+    expect(
+      screen.queryByText(/Per (million|thousand) tokens/)
+    ).not.toBeInTheDocument()
   })
-
-  it('preserves expression prices and makes the selected token unit explicit', () => {
+  it('keeps fixed expression prices per request when token units change', () => {
+    const model = pricingModel({
+      billing_mode: 'tiered_expr',
+      billing_expr: 'tier("request", fixed(0.01))',
+    })
+    const { rerender } = render(
+      <ModelCard model={model} onClick={vi.fn()} tokenUnit='K' />
+    )
+    expect(screen.getByText('$0.01')).toBeVisible()
+    expect(screen.getByText('/ request')).toBeVisible()
+    rerender(<ModelCard model={model} onClick={vi.fn()} tokenUnit='M' />)
+    expect(screen.getByText('$0.01')).toBeVisible()
+    expect(screen.queryByText('Per million tokens')).not.toBeInTheDocument()
+  })
+  it('shows request, input, and output prices separately for mixed billing', () => {
+    render(
+      <ModelCard
+        model={pricingModel({
+          billing_mode: 'tiered_expr',
+          billing_expr:
+            'len < 1000 ? tier("request", fixed(0.01)) : tier("tokens", p * 2 + c * 8)',
+        })}
+        onClick={vi.fn()}
+      />
+    )
+    expect(screen.getByText('$0.01')).toBeVisible()
+    expect(screen.getByText('Input').parentElement).toHaveTextContent('$2')
+    expect(screen.getByText('Output').parentElement).toHaveTextContent('$8')
+    expect(screen.getByText('/ request')).toBeVisible()
+    expect(screen.getByText('Token or per-call pricing')).toBeVisible()
+  })
+  it('preserves expression prices and selected group multipliers', () => {
     render(
       <ModelCard
         model={pricingModel({
@@ -405,154 +361,32 @@ describe('model cards', () => {
         usdExchangeRate={6}
       />
     )
-    expect(screen.getByText('Input').parentElement).toHaveTextContent(
-      /\$0.0045\s*\/\s*1K/
-    )
+    expect(screen.getByText('Input').parentElement).toHaveTextContent('$0.0045')
     expect(screen.getByText('Output').parentElement).toHaveTextContent(
-      /\$0.0225\s*\/\s*1K/
+      '$0.0225'
     )
+    expect(screen.getByText('Per thousand tokens')).toBeVisible()
   })
-
-  it('shows the cache read price of an expression model after its input and output prices', () => {
-    render(
-      <ModelCard
-        model={pricingModel({
-          billing_mode: 'tiered_expr',
-          billing_expr: 'tier("base", p * 0.15 + c * 0.6 + cr * 0.003)',
-        })}
-        onClick={vi.fn()}
-        tokenUnit='M'
-        selectedGroup='default'
-      />
-    )
-    expect(screen.getByText('Input').parentElement).toHaveTextContent(
-      /\$0.15\s*\/\s*1M/
-    )
-    expect(screen.getByText('Output').parentElement).toHaveTextContent(
-      /\$0.6\s*\/\s*1M/
-    )
-    expect(screen.getByText('Cache Read').parentElement).toHaveTextContent(
-      /\$0.003\s*\/\s*1M/
-    )
+  it('updates time-based pricing at minute boundaries and when returning to the page', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-09-07T08:59:59+08:00'))
+    const model = pricingModel({
+      billing_mode: 'tiered_expr',
+      billing_expr:
+        'hour("Asia/Shanghai") >= 9 && hour("Asia/Shanghai") < 12 ? tier("peak", p * 3 + c * 9) : tier("off_peak", p * 1.5 + c * 4.5)',
+    })
+    render(<ModelCard model={model} onClick={vi.fn()} />)
+    expect(screen.getByText('Current period price')).toBeVisible()
+    expect(screen.getByText('$1.5')).toBeVisible()
+    act(() => vi.advanceTimersByTime(1000))
+    expect(screen.getByText('$3')).toBeVisible()
+    act(() => {
+      vi.setSystemTime(new Date('2026-09-07T12:00:00+08:00'))
+      fireEvent(document, new Event('visibilitychange'))
+    })
+    expect(screen.getByText('$1.5')).toBeVisible()
   })
-
-  it('shows the cache read price once when a plugin provider already lists it as a main price', () => {
-    render(
-      <ModelCard
-        model={pricingModel({
-          billing_plugin_variants: [
-            {
-              plugin_key: 'alpha',
-              plugin_name: 'Alpha',
-              billing_mode: 'tiered_expr',
-              billing_expr: 'tier("base", p * 1 + c * 2 + cr * 0.5)',
-              billing_usage_schema: {},
-            },
-          ],
-        })}
-        onClick={vi.fn()}
-        tokenUnit='M'
-        selectedGroup='default'
-      />
-    )
-    expect(screen.getAllByText('Cache Read')).toHaveLength(1)
-  })
-
-  it('shows the cache read price of an expression model that prices nothing else', () => {
-    render(
-      <ModelCard
-        model={pricingModel({
-          billing_mode: 'tiered_expr',
-          billing_expr: 'tier("base", cr * 0.5)',
-        })}
-        onClick={vi.fn()}
-        tokenUnit='M'
-        selectedGroup='default'
-      />
-    )
-    expect(screen.getByText('Cache Read').parentElement).toHaveTextContent(
-      /\$0.5\s*\/\s*1M/
-    )
-  })
-
-  it('keeps task price ranges in their actual usage unit instead of the selected token unit', () => {
-    render(
-      <ModelCard
-        model={pricingModel({
-          billing_mode: 'tiered_expr',
-          billing_expr:
-            'u("mode") == "pro" ? tier("pro", u("seconds") * 0.8) : tier("std", u("seconds") * 0.4)',
-          billing_usage_schema: {
-            seconds: { type: 'number', unit: 'second' },
-            mode: { enum: ['std', 'pro'] },
-          },
-        })}
-        onClick={vi.fn()}
-        tokenUnit='K'
-      />
-    )
-    expect(screen.getByText(/0.4.*0.8/)).toHaveTextContent(/0.4 – \$0.8/)
-    expect(screen.getByText(/^\/\s*s$/)).toBeVisible()
-    expect(screen.queryByText(/1K|1M/)).not.toBeInTheDocument()
-  })
-
-  it('hides a task usage price left at zero while another usage price is set', () => {
-    render(
-      <ModelCard
-        model={pricingModel({
-          billing_mode: 'tiered_expr',
-          billing_expr: 'tier("base", u("count") * 0 + u("seconds") * 0.7)',
-          billing_usage_schema: {
-            count: {
-              type: 'number',
-              unit: 'count',
-              description: { en: 'Per-task price' },
-            },
-            seconds: {
-              type: 'number',
-              unit: 'second',
-              description: { en: 'Video generation unit price' },
-            },
-          },
-        })}
-        onClick={vi.fn()}
-      />
-    )
-    expect(screen.getByText('Video generation unit price')).toBeVisible()
-    expect(screen.queryByText('Per-task price')).not.toBeInTheDocument()
-  })
-
-  it('does not show the tier name of a single-tier task price', () => {
-    render(
-      <ModelCard
-        model={pricingModel({
-          billing_mode: 'tiered_expr',
-          billing_expr: 'tier("base", u("seconds") * 0.4)',
-          billing_usage_schema: { seconds: { type: 'number', unit: 'second' } },
-        })}
-        onClick={vi.fn()}
-      />
-    )
-    expect(screen.getByText(/^\$0\.4$/)).toBeVisible()
-    expect(screen.queryByText('(base)')).not.toBeInTheDocument()
-  })
-
-  it('shows the unconfigured usage message without inventing a token price', () => {
-    render(
-      <ModelCard
-        model={pricingModel({
-          billing_usage_schema: { seconds: { type: 'number', unit: 'second' } },
-        })}
-        onClick={vi.fn()}
-      />
-    )
-    expect(
-      screen.getByText('Usage-based billing · price not configured')
-    ).toBeVisible()
-    expect(screen.queryByText('Input')).not.toBeInTheDocument()
-  })
-
-  it('shows a spaced task token range with its unit when an example price is present', () => {
+  it('keeps task billing ranges with their own units', () => {
     render(
       <ModelCard
         model={pricingModel({
@@ -576,8 +410,7 @@ describe('model cards', () => {
     )
     expect(screen.getByText(/480p · 5s ≈/)).toBeVisible()
   })
-
-  it('keeps an unrecognized expression visible with the special billing message', () => {
+  it('indicates special billing without filling a card with a raw expression', () => {
     const expression =
       'u("seconds") > 30 ? tier("long", u("seconds") * 0.3) : tier("short", u("seconds") * 0.4)'
     render(
@@ -591,253 +424,62 @@ describe('model cards', () => {
       />
     )
     expect(screen.getByText('Special billing expression')).toBeVisible()
-    expect(screen.getByText(expression)).toBeVisible()
+    expect(screen.queryByText(expression)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Details' })).toBeEnabled()
   })
-
-  it('keeps browsing and missing metric values available after the metrics request fails', async () => {
-    const request = vi
-      .spyOn(api, 'get')
-      .mockRejectedValue(new Error('metrics unavailable'))
-    const onModelClick = vi.fn()
+  it('shows separate generic and image cache prices including free image cache', () => {
     render(
-      <QueryClientProvider client={queryClient}>
-        <ModelCardGrid models={[pricingModel()]} onModelClick={onModelClick} />
-      </QueryClientProvider>
+      <CachedPriceCell
+        model={pricingModel({
+          billing_mode: 'tiered_expr',
+          billing_expr:
+            'tier("standard", p * 5 + cr * 1.25 + img * 8 + img_cr * 0 + c * 30)',
+        })}
+        options={{ tokenUnit: 'M' }}
+      />
     )
-    await waitFor(() =>
-      expect(
-        queryClient.getQueryState([
-          'perf-metrics-summary',
-          24,
-          ['example-model'],
-        ])?.status
-      ).toBe('error')
+    expect(screen.getByText('Cache Read').parentElement).toHaveTextContent(
+      '$1.25'
     )
-    expect(request).toHaveBeenCalledWith('/api/perf-metrics/summary', {
-      params: { hours: 24, recent_model: ['example-model'] },
-      paramsSerializer: { indexes: null },
-    })
-    expect(
-      within(
-        screen.getByLabelText('Performance metrics for the last 24 hours')
-      ).getAllByText(/^—/)
-    ).toHaveLength(4)
-    const user = userEvent.setup()
-    await user.click(screen.getByRole('button', { name: 'Details' }))
-    expect(onModelClick).toHaveBeenCalledWith('example-model')
+    expect(screen.getByText('Image Cache').parentElement).toHaveTextContent(
+      '$0'
+    )
   })
-
-  it('paginates the model cards and disables navigation at both boundaries', async () => {
-    const request = vi.spyOn(api, 'get').mockResolvedValue({
-      data: { success: true, data: { models: [] } },
-    })
+  it('paginates and returns to the first page when the result set changes', async () => {
     const models = Array.from({ length: 21 }, (_, index) =>
       pricingModel({ id: index + 1, model_name: `model-${index + 1}` })
     )
     const user = userEvent.setup()
-    render(
-      <QueryClientProvider client={queryClient}>
-        <ModelCardGrid models={models} onModelClick={vi.fn()} />
-      </QueryClientProvider>
+    const { rerender } = render(
+      <ModelCardGrid models={models} onModelClick={vi.fn()} />
     )
     expect(screen.getByRole('button', { name: 'Previous page' })).toBeDisabled()
     expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(20)
-    expect(request).toHaveBeenCalledWith('/api/perf-metrics/summary', {
-      params: {
-        hours: 24,
-        recent_model: models.slice(0, 20).map((model) => model.model_name),
-      },
-      paramsSerializer: { indexes: null },
-    })
     await user.click(screen.getByRole('button', { name: 'Next page' }))
-    expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(1)
     expect(screen.getByRole('heading', { name: 'model-21' })).toBeVisible()
-    expect(request).toHaveBeenLastCalledWith('/api/perf-metrics/summary', {
-      params: { hours: 24, recent_model: ['model-21'] },
-      paramsSerializer: { indexes: null },
-    })
     expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled()
-    await user.click(screen.getByRole('button', { name: 'Previous page' }))
-    expect(screen.getByRole('heading', { name: 'model-1' })).toBeVisible()
-  })
-
-  it('switches the card grid to three columns at the xl breakpoint instead of 2xl', () => {
-    queryClient.setQueryData(['perf-metrics-summary', 24, ['example-model']], {
-      success: true,
-      data: { models: [] },
-    })
-    render(
-      <QueryClientProvider client={queryClient}>
-        <ModelCardGrid models={[pricingModel()]} onModelClick={vi.fn()} />
-      </QueryClientProvider>
-    )
-    const grid = screen
-      .getByRole('heading', { name: 'example-model' })
-      .closest('.grid')
-    expect(grid).toHaveClass('xl:grid-cols-3')
-    expect(grid).not.toHaveClass('2xl:grid-cols-3')
-    expect(grid).not.toHaveClass('min-[1440px]:grid-cols-3')
-  })
-
-  it('shows only sparse valid samples in chronological order without placeholder bars', () => {
-    vi.useFakeTimers()
-    vi.setSystemTime(new Date('2026-09-07T12:00:00.000Z'))
-    const currentHourStart = Math.floor(Date.now() / 1000 / 3600) * 3600
-
-    render(
-      <ModelCard
-        model={pricingModel()}
-        onClick={vi.fn()}
-        perf={{
-          avg_latency_ms: 1200,
-          avg_tps: 42,
-          success_rate: 100,
-          window_start: currentHourStart - 23 * 3600,
-          recent_success_series: [
-            { ts: currentHourStart, success_rate: 100 },
-            { ts: currentHourStart - 5 * 3600, success_rate: 80 },
-            { ts: currentHourStart - 3 * 3600, success_rate: 0 },
-          ],
-        }}
+    rerender(
+      <ModelCardGrid
+        models={models.filter((model) => model.id !== 1)}
+        onModelClick={vi.fn()}
       />
     )
-
-    const spans = [
-      ...screen.getByRole('img', {
-        name: 'Success rate',
-      }).children,
-    ]
-    expect(spans).toHaveLength(3)
-    expect(spans[0]).toHaveClass('bg-amber-500')
-    expect(spans[1]).toHaveClass('bg-red-500')
-    expect(spans[2]).toHaveClass('bg-emerald-500')
-    vi.useRealTimers()
+    expect(screen.getByRole('heading', { name: 'model-2' })).toBeVisible()
+    expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(20)
   })
-
-  it('skips invalid samples without inserting gaps or dropping a zero success rate', () => {
-    const windowStart = Date.parse('2026-09-07T00:00:00.000Z') / 1000
+  it('opens list details by keyboard without firing the row click twice', async () => {
+    const onModelClick = vi.fn(),
+      user = userEvent.setup()
     render(
-      <ModelCard
-        model={pricingModel()}
-        onClick={vi.fn()}
-        perf={{
-          avg_latency_ms: 1200,
-          avg_tps: 42,
-          success_rate: 50,
-          window_start: windowStart,
-          recent_success_series: [
-            { ts: windowStart, success_rate: 100 },
-            { ts: windowStart + 3600, success_rate: Number.NaN },
-            { ts: windowStart + 2 * 3600, success_rate: -1 },
-            { ts: windowStart + 3 * 3600, success_rate: 101 },
-            {
-              ts: windowStart + 4 * 3600,
-              success_rate: Number.POSITIVE_INFINITY,
-            },
-            { ts: windowStart + 5 * 3600, success_rate: 0 },
-            { ts: Number.NaN, success_rate: 100 },
-          ],
-        }}
-      />
+      <PricingTable models={[pricingModel()]} onModelClick={onModelClick} />
     )
-
-    const spans = [
-      ...screen.getByRole('img', {
-        name: 'Success rate',
-      }).children,
-    ]
-    expect(spans).toHaveLength(2)
-    expect(spans[0]).toHaveClass('bg-emerald-500')
-    expect(spans[1]).toHaveClass('bg-red-500')
-  })
-
-  it('shows the latest 24 valid samples without requiring hourly window metadata or mutating the series', () => {
-    const recentSeries = [
-      { ts: 0, success_rate: 0 },
-      ...Array.from({ length: 24 }, (_, index) => ({
-        ts: (index + 1) * 7200,
-        success_rate: 100,
-      })),
-      { ts: 25 * 7200, success_rate: Number.NaN },
-    ].reverse()
-    const originalSeries = [...recentSeries]
-    render(
-      <ModelCard
-        model={pricingModel()}
-        onClick={vi.fn()}
-        perf={{
-          avg_latency_ms: 1200,
-          avg_tps: 42,
-          success_rate: 100,
-          recent_success_series: recentSeries,
-        }}
-      />
-    )
-
-    const spans = [
-      ...screen.getByRole('img', {
-        name: 'Success rate',
-      }).children,
-    ]
-    expect(spans).toHaveLength(24)
-    spans.forEach((sample) => {
-      expect(sample).toHaveClass('bg-emerald-500')
-    })
-    expect(recentSeries).toEqual(originalSeries)
-  })
-
-  it.each([undefined, [], [{ ts: 3600, success_rate: Number.NaN }]])(
-    'shows an empty state without bars when the series has no valid samples: %j',
-    (series) => {
-      render(
-        <ModelCard
-          model={pricingModel()}
-          onClick={vi.fn()}
-          perf={{
-            avg_latency_ms: 1200,
-            avg_tps: 42,
-            success_rate: 100,
-            recent_success_series: series,
-          }}
-        />
-      )
-
-      const statusStrip = screen.getByRole('img', {
-        name: 'No performance data available',
-      })
-      expect(statusStrip).toHaveTextContent('—')
-      expect(statusStrip.querySelectorAll('[aria-hidden]')).toHaveLength(0)
-    }
-  )
-
-  it('shows a single server sample without padding when the browser clock is a day ahead', () => {
-    vi.useFakeTimers()
-    vi.setSystemTime(new Date('2026-09-07T12:37:00.000Z'))
-    const currentHourStart = Math.floor(Date.now() / 1000 / 3600) * 3600
-
-    render(
-      <ModelCard
-        model={pricingModel()}
-        onClick={vi.fn()}
-        perf={{
-          avg_latency_ms: 1200,
-          avg_tps: 42,
-          success_rate: 80,
-          window_start: currentHourStart - 47 * 3600,
-          recent_success_series: [
-            { ts: currentHourStart - 29 * 3600, success_rate: 80 },
-          ],
-        }}
-      />
-    )
-
-    const spans = [
-      ...screen.getByRole('img', {
-        name: 'Success rate',
-      }).children,
-    ]
-    expect(spans).toHaveLength(1)
-    expect(spans[0]).toHaveClass('bg-amber-500')
-    vi.useRealTimers()
+    screen.getByRole('button', { name: 'example-model' }).focus()
+    await user.keyboard('{Enter}')
+    expect(onModelClick).toHaveBeenCalledOnce()
+    expect(onModelClick).toHaveBeenCalledWith('example-model')
+    expect(
+      screen.queryByRole('columnheader', { name: 'Groups' })
+    ).not.toBeInTheDocument()
+    expect(screen.queryByText(/CNY|USD/)).not.toBeInTheDocument()
   })
 })

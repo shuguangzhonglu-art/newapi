@@ -31,7 +31,7 @@ import {
   hasTaskUsageSchema,
   isUnconfiguredTaskUsageModel,
 } from './dynamic-price'
-import { isTokenBasedModel } from './model-helpers'
+import { getCatalogGroupRatio, isTokenBasedModel } from './model-helpers'
 import { calculateTokenPrice } from './price'
 
 // ----------------------------------------------------------------------------
@@ -45,15 +45,17 @@ export function filterBySearch(
   models: PricingModel[],
   query: string
 ): PricingModel[] {
-  if (!query) return models
-
-  const lowerQuery = query.toLowerCase()
+  const lowerQuery = query.trim().toLowerCase()
+  if (!lowerQuery) return models
   return models.filter(
     (m) =>
       m.model_name?.toLowerCase().includes(lowerQuery) ||
       m.description?.toLowerCase().includes(lowerQuery) ||
       m.tags?.toLowerCase().includes(lowerQuery) ||
-      m.vendor_name?.toLowerCase().includes(lowerQuery)
+      m.vendor_name?.toLowerCase().includes(lowerQuery) ||
+      m.supported_endpoint_types?.some((endpoint) =>
+        endpoint.toLowerCase().includes(lowerQuery)
+      )
   )
 }
 
@@ -76,7 +78,10 @@ export function filterByGroup(
   group: string
 ): PricingModel[] {
   if (group === FILTER_ALL) return models
-  return models.filter((m) => m.enable_groups?.includes(group))
+  return models.filter(
+    (m) =>
+      m.enable_groups?.includes(FILTER_ALL) || m.enable_groups?.includes(group)
+  )
 }
 
 /**
@@ -133,13 +138,18 @@ const PRICE_SORTS: Partial<
  */
 function getSortPrice(
   model: PricingModel,
-  kind: SortPriceKind
+  kind: SortPriceKind,
+  now?: Date
 ): number | undefined {
   if (kind === 'request') {
-    const example = getCardExamplePrice(model, { tokenUnit: 'M' })
+    const example = getCardExamplePrice(model, { tokenUnit: 'M', now })
     if (example) return example.total
   }
-  const summary = getDynamicPricingSummary(model, { tokenUnit: 'M' })
+  const summary = getDynamicPricingSummary(model, {
+    tokenUnit: 'M',
+    now,
+    includeTierRanges: true,
+  })
   if (kind === 'request') {
     if (summary) {
       return summary.entries.find(
@@ -165,7 +175,9 @@ function getSortPrice(
  */
 export function sortModels(
   models: PricingModel[],
-  sortBy: string
+  sortBy: string,
+  selectedGroup?: string,
+  now?: Date
 ): PricingModel[] {
   const sorted = [...models]
 
@@ -173,7 +185,19 @@ export function sortModels(
   if (priceSort) {
     // Extracting the price parses the billing expression, so compute once
     const price = new Map(
-      sorted.map((m) => [m, getSortPrice(m, priceSort.kind)])
+      sorted.map((model) => {
+        const basePrice = getSortPrice(model, priceSort.kind, now)
+        const displayedPrice =
+          basePrice == null
+            ? undefined
+            : basePrice * getCatalogGroupRatio(model, selectedGroup)
+        return [
+          model,
+          displayedPrice != null && Number.isFinite(displayedPrice)
+            ? displayedPrice
+            : undefined,
+        ]
+      })
     )
     // Models without this kind of price stay last in both directions
     sorted.sort((a, b) => {
@@ -211,6 +235,7 @@ export function filterAndSortModels(
     endpointType: string
     tag: string
     sortBy: string
+    now?: Date
   }
 ): PricingModel[] {
   let result = filterBySearch(models, filters.search)
@@ -219,7 +244,7 @@ export function filterAndSortModels(
   result = filterByQuotaType(result, filters.quotaType)
   result = filterByEndpointType(result, filters.endpointType)
   result = filterByTag(result, filters.tag)
-  result = sortModels(result, filters.sortBy)
+  result = sortModels(result, filters.sortBy, filters.group, filters.now)
 
   return result
 }
@@ -250,7 +275,7 @@ export function extractAllTags(models: PricingModel[]): string[] {
     }
   })
 
-  return Array.from(tagSet).sort((a, b) => a.localeCompare(b))
+  return [...tagSet].sort((a, b) => a.localeCompare(b))
 }
 
 /**

@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { api } from '@/lib/api'
 
-import type { PricingData } from './types'
+import type { PricingData, PricingResponse } from './types'
 
 // ----------------------------------------------------------------------------
 // Pricing APIs
@@ -26,6 +26,20 @@ import type { PricingData } from './types'
 
 // Get model pricing data
 export async function getPricing(): Promise<PricingData> {
-  const res = await api.get('/api/pricing')
-  return res.data
+  const { data } = await api.get<PricingResponse>('/api/pricing')
+  return {
+    ...data,
+    usable_group: Object.fromEntries(
+      Object.entries(data.usable_group ?? {}).map(([group, value]) => [
+        group,
+        {
+          desc: typeof value === 'string' ? value : value.desc,
+          // group_ratio includes user-specific overrides and valid free groups.
+          ratio:
+            data.group_ratio?.[group] ??
+            (typeof value === 'string' ? Number.NaN : value.ratio),
+        },
+      ])
+    ),
+  }
 }

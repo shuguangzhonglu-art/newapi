@@ -83,6 +83,7 @@ const model: PricingModel = {
   model_ratio: 1,
   completion_ratio: 1,
   enable_groups: ['default'],
+  group_ratio: { default: 1 },
   billing_mode: 'tiered_expr',
   billing_expr: 'tier("music", u("clips") * 0.22)',
   billing_usage_schema: {

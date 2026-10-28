@@ -16,8 +16,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { useSearch } from '@tanstack/react-router'
-import { useMemo, useCallback, useState } from 'react'
+import { useNavigate, useSearch } from '@tanstack/react-router'
+import { useMemo, useCallback } from 'react'
 
 import { useDebounce } from '@/hooks/use-debounce'
 
@@ -30,8 +30,12 @@ import {
   VIEW_MODES,
   type ViewMode,
 } from '../constants'
+import { splitBillingExprAndRequestRules } from '../lib/billing-expr'
+import { compileBillingExpression } from '../lib/billing-expression/parser'
+import { TIME_FUNCTIONS } from '../lib/billing-expression/types'
 import { filterAndSortModels, extractAllTags } from '../lib/filters'
 import type { PricingModel, TokenUnit } from '../types'
+import { useBillingTime } from './use-billing-time'
 
 type FilterState = {
   search?: string
@@ -54,19 +58,10 @@ function normalizeViewMode(value: unknown): ViewMode {
 }
 
 export function useFilters(models: PricingModel[]) {
-  const search = useSearch({ from: '/pricing/' })
-  const [filterState, setFilterState] = useState<FilterState>(() => ({
-    search: search.search,
-    sort: search.sort,
-    vendor: search.vendor,
-    group: search.group,
-    quotaType: search.quotaType,
-    endpointType: search.endpointType,
-    tag: search.tag,
-    tokenUnit: search.tokenUnit,
-    view: search.view,
-    rechargePrice: search.rechargePrice,
-  }))
+  // Keep a single source of truth so shared URLs and browser history restore
+  // the complete catalog, including display preferences and search text.
+  const filterState = useSearch({ from: '/pricing/' })
+  const navigate = useNavigate({ from: '/pricing/' })
 
   const searchInput = filterState.search || ''
   const debouncedSearchInput = useDebounce(searchInput, 200)
@@ -81,20 +76,48 @@ export function useFilters(models: PricingModel[]) {
   const viewMode = normalizeViewMode(filterState.view)
   const showRechargePrice = filterState.rechargePrice === true
 
-  const updateFilters = useCallback((updates: Record<string, unknown>) => {
-    setFilterState((prev) => {
-      const next: Record<string, unknown> = { ...prev, ...updates }
-      for (const key of Object.keys(next)) {
-        if (next[key] === undefined || next[key] === null) {
-          delete next[key]
+  const timeExpression = useMemo(() => {
+    if (sortBy === SORT_OPTIONS.NAME) return undefined
+    for (const model of models) {
+      const expressions = [
+        model.billing_expr,
+        ...(model.billing_plugin_variants?.map(
+          (variant) => variant.billing_expr
+        ) ?? []),
+      ]
+      for (const expression of expressions) {
+        if (!expression) continue
+        const source = splitBillingExprAndRequestRules(expression).billingExpr
+        const compiled = compileBillingExpression(source)
+        if (
+          compiled.status === 'ready' &&
+          TIME_FUNCTIONS.some((name) => compiled.functions.has(name))
+        ) {
+          return source
         }
       }
-      return next as FilterState
-    })
-  }, [])
+    }
+    return undefined
+  }, [models, sortBy])
+  // Reuse the shared clock so ordering changes alongside visible timed prices.
+  // An ordinary catalog or name sort does not subscribe to a timer.
+  const billingTime = useBillingTime(timeExpression)
+
+  const updateFilters = useCallback(
+    (updates: Partial<FilterState>, replace = false) => {
+      void navigate({
+        search: (prev) => ({ ...prev, ...updates }),
+        replace,
+        resetScroll: false,
+      })
+    },
+    [navigate]
+  )
 
   const setSearchInput = useCallback(
-    (v: string) => updateFilters({ search: v || undefined }),
+    // Typing replaces the current entry instead of making Back undo every
+    // keystroke. Model filtering remains debounced independently below.
+    (v: string) => updateFilters({ search: v || undefined }, true),
     [updateFilters]
   )
   const setSortBy = useCallback(
@@ -157,9 +180,11 @@ export function useFilters(models: PricingModel[]) {
       endpointType: endpointTypeFilter,
       tag: tagFilter,
       sortBy,
+      now: billingTime === undefined ? undefined : new Date(billingTime),
     })
   }, [
     models,
+    billingTime,
     debouncedSearchInput,
     vendorFilter,
     groupFilter,

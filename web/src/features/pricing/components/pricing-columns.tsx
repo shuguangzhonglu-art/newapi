@@ -17,6 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import type { ColumnDef } from '@tanstack/react-table'
+import { ArrowUpRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import {
@@ -26,6 +27,7 @@ import {
 } from '@/components/data-table'
 import { GroupBadge } from '@/components/group-badge'
 import { StatusBadge } from '@/components/status-badge'
+import { Button } from '@/components/ui/button'
 import { getLobeIcon } from '@/lib/lobe-icon'
 
 import { parseTags } from '../lib/filters'
@@ -38,7 +40,9 @@ import { ModelPriceCell, type ModelPriceCellOptions } from './model-price-cell'
 // Pricing Table Columns
 // ----------------------------------------------------------------------------
 
-export type PricingColumnsOptions = ModelPriceCellOptions
+export type PricingColumnsOptions = ModelPriceCellOptions & {
+  onModelClick?: (modelName: string) => void
+}
 
 export function usePricingColumns(
   options: PricingColumnsOptions = {}
@@ -59,25 +63,42 @@ export function usePricingColumns(
         const modelIcon = modelIconKey ? getLobeIcon(modelIconKey, 14) : null
 
         return (
-          <div className='flex max-w-full min-w-0 items-center gap-2'>
+          <div className='hema-catalog-table-model flex max-w-full min-w-0 items-start gap-3'>
             {modelIcon}
-            <span className='truncate font-mono text-sm font-medium'>
-              {model.model_name}
-            </span>
+            <div className='min-w-0'>
+              {options.onModelClick ? (
+                <Button
+                  variant='ghost'
+                  className='hema-model-title h-auto max-w-full justify-start px-0 py-0 text-left text-sm font-medium [overflow-wrap:anywhere] whitespace-normal'
+                  onClick={() => options.onModelClick?.(model.model_name)}
+                >
+                  {model.model_name}
+                </Button>
+              ) : (
+                <span className='text-sm font-medium [overflow-wrap:anywhere]'>
+                  {model.model_name}
+                </span>
+              )}
+              {model.vendor_name && (
+                <span className='text-muted-foreground mt-1 block truncate text-xs'>
+                  {model.vendor_name}
+                </span>
+              )}
+              {model.description && (
+                <p
+                  className='text-muted-foreground mt-1 line-clamp-1 text-xs'
+                  title={model.description}
+                >
+                  {model.description}
+                </p>
+              )}
+            </div>
           </div>
         )
       },
-      minSize: 200,
-    },
-
-    // Type column
-    {
-      accessorKey: 'quota_type',
-      header: t('Type'),
-      cell: ({ row }) => (
-        <ModelBillingModeBadge model={row.original} className='-ml-1.5' />
-      ),
-      size: 110,
+      minSize: 240,
+      size: 360,
+      enableHiding: false,
       enableSorting: false,
     },
 
@@ -89,15 +110,32 @@ export function usePricingColumns(
         <DataTableColumnHeader column={column} title={t('Price')} />
       ),
       cell: ({ row }) => (
-        <ModelPriceCell model={row.original} options={options} />
+        <ModelPriceCell
+          model={row.original}
+          options={options}
+          showExpression={false}
+        />
       ),
-      size: 180,
+      size: 260,
+      enableHiding: false,
+      enableSorting: false,
+    },
+
+    // Type column
+    {
+      accessorKey: 'quota_type',
+      header: t('Type'),
+      cell: ({ row }) => (
+        <ModelBillingModeBadge model={row.original} appearance='caption' />
+      ),
+      size: 110,
       enableSorting: false,
     },
 
     // Cached price column (Vercel AI Gateway style)
     {
       id: 'cached_price',
+      accessorFn: (model) => model.cache_ratio,
       header: t('Cached'),
       cell: ({ row }) => (
         <CachedPriceCell model={row.original} options={options} />
@@ -198,6 +236,26 @@ export function usePricingColumns(
         )
       },
       size: 130,
+      enableSorting: false,
+    },
+    {
+      id: 'details',
+      header: '',
+      cell: ({ row }) =>
+        options.onModelClick ? (
+          <Button
+            variant='ghost'
+            size='icon'
+            aria-label={t('View details for {{model}}', {
+              model: row.original.model_name,
+            })}
+            onClick={() => options.onModelClick?.(row.original.model_name)}
+          >
+            <ArrowUpRight className='size-4' aria-hidden />
+          </Button>
+        ) : null,
+      size: 52,
+      enableHiding: false,
       enableSorting: false,
     },
   ]

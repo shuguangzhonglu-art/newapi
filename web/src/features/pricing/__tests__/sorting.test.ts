@@ -19,7 +19,7 @@ For commercial licensing, please contact support@quantumnous.com
 import { describe, expect, test } from 'vitest'
 
 import { SORT_OPTIONS } from '../constants'
-import { sortModels } from '../lib/filters'
+import { filterBySearch, sortModels } from '../lib/filters'
 import type { PricingModel } from '../types'
 
 function pricingModel(
@@ -33,6 +33,7 @@ function pricingModel(
     model_ratio: 1,
     completion_ratio: 1,
     enable_groups: ['default'],
+    group_ratio: { default: 1 },
     ...overrides,
   }
 }
@@ -64,6 +65,17 @@ const models = [
     billing_usage_examples: [{ label: '5s', facts: { seconds: 5 } }],
   }),
 ]
+
+describe('model search', () => {
+  test('finds endpoint names case-insensitively and ignores surrounding spaces', () => {
+    const searchable = [
+      pricingModel('first', { supported_endpoint_types: ['openai-response'] }),
+      pricingModel('second', { supported_endpoint_types: ['gemini'] }),
+    ]
+    expect(filterBySearch(searchable, ' RESPONSE ')).toEqual([searchable[0]])
+    expect(filterBySearch(searchable, '   ')).toEqual(searchable)
+  })
+})
 
 describe('price sorting', () => {
   test.each([
@@ -123,4 +135,94 @@ describe('price sorting', () => {
       )
     }
   )
+})
+
+describe('displayed group price sorting', () => {
+  test.each([SORT_OPTIONS.INPUT_PRICE_LOW, SORT_OPTIONS.INPUT_PRICE_HIGH])(
+    '%s keeps models with an unconfigured group price after known prices',
+    (sortBy) => {
+      const list = [
+        pricingModel('unknown-price', { group_ratio: {} }),
+        pricingModel('paid', { model_ratio: 2 }),
+        pricingModel('free', { group_ratio: { default: 0 } }),
+      ]
+      expect(
+        sortModels(list, sortBy, 'default').map((m) => m.model_name)
+      ).toEqual(
+        sortBy === SORT_OPTIONS.INPUT_PRICE_LOW
+          ? ['free', 'paid', 'unknown-price']
+          : ['paid', 'free', 'unknown-price']
+      )
+    }
+  )
+
+  test('sorts token prices using the chosen group instead of the base price', () => {
+    const list = [
+      pricingModel('higher-base', {
+        model_ratio: 10,
+        enable_groups: ['default', 'vip'],
+        group_ratio: { default: 1, vip: 0.1 },
+      }),
+      pricingModel('lower-base', {
+        model_ratio: 2,
+        enable_groups: ['default', 'vip'],
+        group_ratio: { default: 1, vip: 1 },
+      }),
+    ]
+    expect(
+      sortModels(list, SORT_OPTIONS.INPUT_PRICE_LOW, 'vip').map(
+        (m) => m.model_name
+      )
+    ).toEqual(['higher-base', 'lower-base'])
+    expect(
+      sortModels(list, SORT_OPTIONS.INPUT_PRICE_LOW, 'default').map(
+        (m) => m.model_name
+      )
+    ).toEqual(['lower-base', 'higher-base'])
+  })
+  test('compares request examples and expressions at the displayed group rate', () => {
+    const list = [
+      pricingModel('expression', {
+        billing_mode: 'tiered_expr',
+        billing_expr: 'tier("request", fixed(10))',
+        enable_groups: ['vip'],
+        group_ratio: { vip: 0.1 },
+      }),
+      pricingModel('request', {
+        quota_type: 1,
+        model_price: 2,
+        enable_groups: ['vip'],
+        group_ratio: { vip: 1 },
+      }),
+    ]
+    expect(
+      sortModels(list, SORT_OPTIONS.REQUEST_PRICE_LOW, 'vip').map(
+        (m) => m.model_name
+      )
+    ).toEqual(['expression', 'request'])
+  })
+})
+
+describe('tiered starting-price sorting', () => {
+  test('compares the minimum advertised tier even when the first tier costs more', () => {
+    const list = [
+      pricingModel('volume-discount', {
+        billing_mode: 'tiered_expr',
+        billing_expr:
+          'len <= 200000 ? tier("standard", p * 10 + c * 20) : tier("volume", p * 1 + c * 2)',
+      }),
+      pricingModel('flat', { model_ratio: 2, completion_ratio: 1.5 }),
+    ]
+
+    expect(
+      sortModels(list, SORT_OPTIONS.INPUT_PRICE_LOW).map(
+        (model) => model.model_name
+      )
+    ).toEqual(['volume-discount', 'flat'])
+    expect(
+      sortModels(list, SORT_OPTIONS.OUTPUT_PRICE_LOW).map(
+        (model) => model.model_name
+      )
+    ).toEqual(['volume-discount', 'flat'])
+  })
 })

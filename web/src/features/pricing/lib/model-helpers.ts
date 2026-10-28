@@ -35,8 +35,11 @@ export function getAvailableGroups(
     : []
 
   return Object.keys(usableGroup)
-    .filter((g) => !EXCLUDED_GROUPS.includes(g))
-    .filter((g) => modelEnableGroups.includes(g))
+    .filter((g) => !EXCLUDED_GROUPS.includes(g) && g !== FILTER_ALL)
+    .filter(
+      (g) =>
+        modelEnableGroups.includes(FILTER_ALL) || modelEnableGroups.includes(g)
+    )
 }
 
 /**
@@ -59,39 +62,48 @@ export function getConfiguredGroupRatio(
  */
 export function getDisplayGroupRatio(
   model: PricingModel,
-  selectedGroup?: string
+  selectedGroup?: string,
+  strict = false
 ): number {
   const modelEnableGroups = Array.isArray(model.enable_groups)
     ? model.enable_groups
     : []
   const groupRatio = model.group_ratio || {}
 
-  if (
-    selectedGroup &&
-    selectedGroup !== FILTER_ALL &&
-    modelEnableGroups.includes(selectedGroup)
-  ) {
-    return getConfiguredGroupRatio(groupRatio, selectedGroup)
-  }
+  const availableGroups = modelEnableGroups.includes(FILTER_ALL)
+    ? Object.keys(groupRatio).filter(
+        (group) => !EXCLUDED_GROUPS.includes(group) && group !== FILTER_ALL
+      )
+    : modelEnableGroups.filter((group) => !EXCLUDED_GROUPS.includes(group))
 
-  if (modelEnableGroups.length === 0) {
-    return 1
+  if (selectedGroup && selectedGroup !== FILTER_ALL) {
+    if (availableGroups.includes(selectedGroup)) {
+      const ratio = groupRatio[selectedGroup]
+      if (typeof ratio === 'number' && Number.isFinite(ratio) && ratio >= 0) {
+        return ratio
+      }
+      return strict ? Number.NaN : 1
+    }
+    if (strict) return Number.NaN
   }
 
   let minRatio = Number.POSITIVE_INFINITY
-
-  for (const group of modelEnableGroups) {
+  for (const group of availableGroups) {
     const ratio = groupRatio[group]
-    if (
-      typeof ratio === 'number' &&
-      Number.isFinite(ratio) &&
-      ratio < minRatio
-    ) {
-      minRatio = ratio
+    if (typeof ratio === 'number' && Number.isFinite(ratio) && ratio >= 0) {
+      minRatio = Math.min(minRatio, ratio)
     }
   }
+  if (Number.isFinite(minRatio)) return minRatio
+  return strict ? Number.NaN : 1
+}
 
-  return minRatio === Number.POSITIVE_INFINITY ? 1 : minRatio
+/** Catalog prices must not turn absent group configuration into a quote. */
+export function getCatalogGroupRatio(
+  model: PricingModel,
+  selectedGroup?: string
+): number {
+  return getDisplayGroupRatio(model, selectedGroup, true)
 }
 
 /**

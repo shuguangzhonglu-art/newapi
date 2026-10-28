@@ -19,15 +19,14 @@ For commercial licensing, please contact support@quantumnous.com
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { ErrorState } from '@/components/error-state'
 import { PublicLayout } from '@/components/layout'
 import { PageTransition } from '@/components/page-transition'
 
 import {
   LoadingSkeleton,
   EmptyState,
-  SearchBar,
   PricingTable,
-  PricingSidebar,
   PricingToolbar,
   ModelCardGrid,
   ModelDetailsDrawer,
@@ -50,6 +49,8 @@ export function Pricing() {
     endpointMap,
     autoGroups,
     isLoading,
+    error,
+    refetch,
     priceRate,
     usdExchangeRate,
   } = usePricingData()
@@ -111,6 +112,17 @@ export function Pricing() {
   }, [clearFilters, clearSearch])
 
   const renderPricingContent = () => {
+    if (error && !models.length) {
+      return (
+        <ErrorState
+          title={t('Unable to load the model catalog')}
+          onRetry={() => {
+            void refetch()
+          }}
+        />
+      )
+    }
+
     if (filteredModels.length === 0) {
       return (
         <EmptyState
@@ -152,7 +164,7 @@ export function Pricing() {
     return (
       <PublicLayout
         showMainContainer={false}
-        className='hema-pricing-page hema-catalog-page'
+        className='hema-pricing-page hema-catalog-page hema-catalog-v2'
       >
         <div className='hema-catalog-content mx-auto w-full max-w-[1800px] px-3 pt-16 pb-8 sm:px-6 sm:pt-20 sm:pb-10 xl:px-8'>
           <LoadingSkeleton viewMode={viewMode} />
@@ -164,74 +176,31 @@ export function Pricing() {
   return (
     <PublicLayout
       showMainContainer={false}
-      className='hema-pricing-page hema-catalog-page'
+      className='hema-pricing-page hema-catalog-page hema-catalog-v2'
     >
       <div className='relative'>
-        <div
-          aria-hidden
-          className='pointer-events-none absolute inset-x-0 top-0 h-[600px] opacity-20 dark:opacity-[0.10]'
-          style={{
-            background: [
-              'radial-gradient(ellipse 60% 50% at 20% 20%, oklch(0.72 0.18 250 / 80%) 0%, transparent 70%)',
-              'radial-gradient(ellipse 50% 40% at 80% 15%, oklch(0.65 0.15 200 / 60%) 0%, transparent 70%)',
-              'radial-gradient(ellipse 40% 35% at 50% 70%, oklch(0.70 0.12 280 / 40%) 0%, transparent 70%)',
-            ].join(', '),
-            maskImage:
-              'linear-gradient(to bottom, black 40%, transparent 100%)',
-            WebkitMaskImage:
-              'linear-gradient(to bottom, black 40%, transparent 100%)',
-          }}
-        />
         <PageTransition className='hema-catalog-content relative mx-auto w-full max-w-[1800px] px-3 pt-16 pb-8 sm:px-6 sm:pt-20 sm:pb-10 xl:px-8'>
-          <header className='hema-catalog-hero mx-auto mb-5 max-w-3xl pt-5 text-center sm:mb-10 sm:pt-10'>
-            <h1 className='text-3xl leading-[1.15] font-bold tracking-tight sm:text-4xl lg:text-5xl'>
-              {t('Model Square')}
-            </h1>
-            <p className='text-muted-foreground/80 mt-3 text-sm sm:mt-4 sm:text-base'>
-              {t('This site currently has {{count}} models enabled', {
-                count: models?.length || 0,
-              })}
-            </p>
-            <p className='text-muted-foreground/60 mx-auto mt-2 max-w-2xl text-xs leading-relaxed sm:text-sm'>
-              {t(
-                'Discover curated AI models, compare pricing and capabilities, and choose the right model for every scenario.'
-              )}
-            </p>
-            <SearchBar
-              value={searchInput}
-              onChange={setSearchInput}
-              onClear={clearSearch}
-              placeholder={t(
-                'Search model name, provider, endpoint, or tag...'
-              )}
-              className='mx-auto mt-4 max-w-2xl sm:mt-6'
-            />
+          <header className='hema-catalog-hero'>
+            <div className='hema-catalog-intro'>
+              <p className='hema-catalog-eyebrow'>
+                {t('One catalog. Every possibility.')}
+              </p>
+              <h1>{t('Model Square')}</h1>
+              <p className='hema-catalog-count'>
+                {t('Find your model. Know your price. Start building.')}
+              </p>
+            </div>
           </header>
 
-          <div className='grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]'>
-            <PricingSidebar
-              quotaTypeFilter={quotaTypeFilter}
-              endpointTypeFilter={endpointTypeFilter}
-              vendorFilter={vendorFilter}
-              groupFilter={groupFilter}
-              tagFilter={tagFilter}
-              onQuotaTypeChange={setQuotaTypeFilter}
-              onEndpointTypeChange={setEndpointTypeFilter}
-              onVendorChange={setVendorFilter}
-              onGroupChange={setGroupFilter}
-              onTagChange={setTagFilter}
-              vendors={vendors || []}
-              groups={availableGroups}
-              groupRatios={groupRatio}
-              tags={availableTags}
-              models={models || []}
-              hasActiveFilters={hasActiveFilters}
-              onClearFilters={clearFilters}
-              className='hover-scrollbar sticky top-20 hidden max-h-[calc(100dvh-6rem)] self-start overflow-y-auto xl:block'
-            />
-
-            <main className='min-w-0 space-y-4'>
+          <div className='hema-catalog-workspace'>
+            <main
+              className='hema-catalog-results min-w-0'
+              aria-label={t('Models')}
+            >
               <PricingToolbar
+                searchInput={searchInput}
+                onSearchChange={setSearchInput}
+                onClearSearch={clearSearch}
                 filteredCount={filteredModels.length}
                 totalCount={models?.length}
                 sortBy={sortBy}

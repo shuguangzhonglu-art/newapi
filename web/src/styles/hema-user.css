@@ -285,7 +285,7 @@ body:has(.hema-public-shell) {
 
 .hema-user-shell [data-slot='sidebar-menu-button'][data-active='true'],
 .hema-public-shell [data-slot='sidebar-menu-button'][data-active='true'] {
-  background: transparent;
+  background: var(--hema-signal-soft);
   color: var(--hema-ink);
   font-weight: 600;
 }
@@ -411,6 +411,22 @@ body:has(.hema-public-shell) {
 .hema-user-shell button:active,
 .hema-public-shell button:active {
   transform: translateY(1px);
+}
+
+/* Native-style feedback uses the existing controls and their disabled state. */
+.hema-user-shell
+  :is(button, [data-slot='button']):is(:disabled, [aria-disabled='true']) {
+  transform: none;
+}
+
+.hema-user-shell
+  :is(
+    [data-slot='button'],
+    [data-slot='sidebar-menu-button'],
+    [data-slot='tabs-trigger']
+  ):focus-visible {
+  outline: 2px solid var(--hema-signal);
+  outline-offset: 2px;
 }
 
 .hema-user-shell [data-slot='button'][data-variant='default'],
@@ -636,12 +652,17 @@ body:has(.hema-public-shell) {
   height: 2.5rem;
   color: var(--hema-muted);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 600;
 }
 
 .hema-user-shell [data-slot='table-cell'] {
   color: var(--hema-ink);
+}
+
+.hema-user-shell [data-slot='table-row'][data-state='selected'] {
+  background: var(--hema-signal-soft);
+  box-shadow: inset 2px 0 var(--hema-signal);
 }
 
 .hema-user-shell [data-slot='tabs-list'] {
@@ -922,6 +943,84 @@ body:has(.hema-public-shell) {
 
 .hema-user-shell [data-slot='data-table-pagination'] [data-slot='button'] {
   border-radius: 2px;
+}
+
+/* Grouped mobile rows keep the same TanStack row identity and selection. */
+.hema-user-shell [data-slot='data-table-mobile-list'] {
+  border-color: var(--hema-line);
+  border-radius: 6px;
+  background: var(--hema-surface);
+}
+
+.hema-user-shell [data-slot='data-table-mobile-row'] {
+  padding: 1rem;
+  transition:
+    background-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.hema-user-shell [data-slot='data-table-mobile-row']:focus-within {
+  box-shadow: inset 2px 0 var(--hema-signal);
+}
+
+.hema-user-shell [data-slot='data-table-mobile-row'][data-state='selected'] {
+  background: color-mix(in srgb, var(--hema-signal) 9%, var(--hema-surface));
+  box-shadow: inset 2px 0 var(--hema-signal);
+}
+
+.hema-user-shell [data-slot='data-table-mobile-select-all'] {
+  min-height: 44px;
+  padding-inline: 1rem;
+  background: var(--table-header);
+}
+
+.hema-user-shell
+  :is([data-slot='data-table-scroll-area'], [data-slot='table-container']) {
+  overscroll-behavior-x: contain;
+}
+
+.hema-user-shell [data-slot='data-table-pagination'] {
+  gap: 0.75rem;
+}
+
+/* Only touch-sized controls grow. Dense desktop tables keep their density. */
+@media (pointer: coarse) {
+  .hema-user-shell
+    :is(
+      .hema-section-page-actions,
+      [data-slot='data-table-toolbar'],
+      [data-slot='data-table-pagination']
+    )
+    :is(
+      [data-slot='button'],
+      [data-slot='input'],
+      [data-slot='select-trigger']
+    ),
+  .hema-user-shell
+    :is(
+      [data-slot='sidebar-menu-button'],
+      [data-slot='sidebar-trigger'],
+      [data-slot='tabs-list'],
+      [data-slot='tabs-trigger']
+    ) {
+    min-height: 44px;
+  }
+
+  .hema-user-shell
+    :is(
+      .hema-section-page-actions,
+      [data-slot='data-table-toolbar'],
+      [data-slot='data-table-pagination']
+    )
+    [data-size^='icon'],
+  .hema-user-shell [data-slot='sidebar-trigger'] {
+    min-width: 44px;
+  }
+
+  .hema-user-shell [data-slot='data-table-mobile-row'] [data-slot='checkbox'] {
+    min-width: 24px;
+    min-height: 24px;
+  }
 }
 
 /* Profile and wallet retain their upstream workflows but share the same
@@ -1667,10 +1766,64 @@ body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
   }
 }
 
+/* Overlay movement follows its existing side and can reverse mid-transition.
+ * Base UI continues to own focus, Escape, dismissal and open state. */
+body:has(.hema-user-shell) [data-slot='sheet-content'] {
+  transition-property: opacity, translate, transform;
+  transition-duration: 220ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+body:has(.hema-user-shell) [data-slot='sheet-content'][data-ending-style] {
+  transition-duration: 160ms;
+  transition-timing-function: ease-out;
+}
+
+body:has(.hema-user-shell)
+  :is([data-slot='dialog-content'], [data-slot='alert-dialog-content']) {
+  animation-duration: 180ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+body:has(.hema-user-shell)
+  :is(
+    [data-slot='dialog-content'],
+    [data-slot='alert-dialog-content']
+  )[data-closed] {
+  animation-duration: 120ms;
+}
+
+@media (pointer: coarse) {
+  body:has(.hema-user-shell)
+    :is([data-slot='sheet-close'], [data-slot='dialog-close']) {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  body:has(.hema-user-shell)
+    :is([data-slot='sheet-header'], [data-slot='dialog-header']) {
+    padding-inline-end: 3.5rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hema-user-shell *,
   .hema-public-shell * {
     scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
+
+  /* Portals are outside the shell; they need the same motion preference. */
+  body:has(.hema-user-shell)
+    :is(
+      [data-slot='sheet-content'],
+      [data-slot='sheet-overlay'],
+      [data-slot='dialog-content'],
+      [data-slot='dialog-overlay'],
+      [data-slot='alert-dialog-content'],
+      [data-slot='alert-dialog-overlay']
+    ) {
     transition-duration: 1ms !important;
     animation-duration: 1ms !important;
   }
@@ -1692,7 +1845,9 @@ body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
   color: var(--hema-ink);
 }
 
-.hema-public-shell [data-slot='app-header'] a[aria-current='page']::after {
+.hema-public-shell
+  [data-slot='app-header']
+  a[aria-current='page']:not([data-slot='header-brand'])::after {
   display: block;
   width: 100%;
   height: 1px;
@@ -2683,4 +2838,745 @@ body:has(:is(.hema-user-shell, .hema-public-shell, .hema-auth-layout))
   .hema-auth-card [data-slot='button']:not(.absolute) {
     transition-duration: 1ms;
   }
+}
+
+/* Usage log reading surface. Scoped to the existing HEMA log view. */
+.hema-common-logs {
+  container: hema-logs / inline-size;
+  --log-surface: color-mix(in srgb, var(--hema-surface) 30%, white);
+  --log-line: color-mix(in srgb, var(--hema-line) 65%, transparent);
+}
+.dark .hema-common-logs {
+  --log-surface: color-mix(in srgb, var(--hema-surface) 90%, black);
+}
+.hema-common-logs .hema-log-filters {
+  border: 1px solid var(--log-line);
+  border-radius: 8px;
+  background: var(--log-surface);
+  box-shadow: none;
+  padding: 16px;
+}
+.hema-log-filters [data-slot='field'],
+.hema-log-filter-drawer [data-slot='field'] {
+  gap: 6px;
+}
+.hema-log-filter-label {
+  color: var(--muted-foreground);
+  font-size: 12px;
+  font-weight: 500;
+}
+.hema-log-filters .hema-log-primary-grid {
+  grid-template-columns: minmax(18rem, 1.6fr) minmax(10rem, 1fr) minmax(
+      8rem,
+      0.7fr
+    );
+  gap: 12px;
+}
+.hema-log-filters .hema-log-primary-row {
+  align-items: end;
+  gap: 12px;
+}
+.hema-log-filters .hema-log-advanced-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.hema-log-filters
+  :is(
+    input,
+    [data-slot='select-trigger'],
+    [data-slot='combobox-input'],
+    [data-slot='popover-trigger']
+  ) {
+  min-height: 36px;
+}
+.hema-log-density {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+.hema-log-density [data-slot='select-trigger'] {
+  width: auto;
+  min-width: 7rem;
+  min-height: 32px;
+}
+.hema-log-stats {
+  min-width: 0;
+  border: 1px solid var(--log-line, var(--border));
+  border-radius: 8px;
+  background: var(--log-surface, var(--card));
+}
+.hema-log-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+}
+.hema-log-stat {
+  min-width: 0;
+  padding: 12px 18px;
+}
+.hema-log-stat + .hema-log-stat {
+  border-left: 1px solid var(--log-line, var(--border));
+}
+.hema-log-stat dt {
+  font-size: 12px;
+  color: var(--muted-foreground);
+  font-weight: 500;
+}
+.hema-log-stat dd {
+  margin: 4px 0 2px;
+  color: var(--foreground);
+  font-size: clamp(16px, 1.7vw, 22px);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.hema-log-stat-caption {
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+.hema-common-logs .hema-log-table {
+  border-color: var(--log-line);
+  border-radius: 8px;
+  background: var(--log-surface);
+  --table-header: var(--log-surface);
+}
+.hema-common-logs .hema-log-table [data-slot='table-head'] {
+  font-family: inherit;
+  font-weight: 550;
+  font-size: 12px;
+  height: 42px;
+}
+.hema-common-logs .hema-log-table [data-slot='table-cell'] {
+  border-color: var(--log-line);
+  vertical-align: top;
+}
+.hema-common-logs
+  .hema-log-table
+  :is(
+    [data-column-id='prompt_tokens'],
+    [data-column-id='quota'],
+    [data-column-id='use_time']
+  ) {
+  font-variant-numeric: tabular-nums;
+}
+.hema-common-logs .hema-log-table [data-column-id='quota'] {
+  text-align: right;
+}
+.hema-common-logs .hema-log-table [data-column-id='quota'] > div {
+  align-items: flex-end;
+}
+.hema-common-logs .hema-log-density-comfortable [data-slot='table-cell'] {
+  padding-block: 14px;
+}
+.hema-common-logs .hema-log-density-compact [data-slot='table-cell'] {
+  padding-block: 7px;
+}
+.hema-common-logs .hema-log-detail-trigger {
+  border: 0;
+  background: transparent;
+  white-space: normal;
+  box-shadow: none;
+}
+.hema-common-logs .hema-log-read-error {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid var(--log-line);
+  border-radius: 8px;
+  background: var(--log-surface);
+}
+.hema-log-details [data-slot='dialog-header'] {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.hema-log-details .hema-log-detail-section > div {
+  padding: 14px;
+  background: color-mix(in srgb, var(--card) 75%, var(--background));
+  border-color: color-mix(in srgb, var(--border) 70%, transparent);
+}
+.hema-log-details .hema-log-detail-row {
+  padding-block: 5px;
+  align-items: start;
+}
+.hema-log-details .hema-log-detail-row > span {
+  line-height: 1.6;
+}
+.hema-log-details .hema-log-detail-section > [data-slot='label'] {
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+.hema-log-error-summary {
+  display: flex;
+  align-items: start;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 12px;
+  border-left: 2px solid var(--destructive);
+  background: color-mix(in srgb, var(--destructive) 7%, transparent);
+}
+.hema-log-error-summary p {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.hema-common-logs button,
+.hema-log-details button {
+  transition:
+    background-color 130ms ease,
+    color 130ms ease,
+    box-shadow 130ms ease;
+}
+.hema-common-logs button:focus-visible,
+.hema-log-details button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.hema-common-logs button:active:not(:disabled),
+.hema-log-details button:active:not(:disabled) {
+  filter: brightness(0.96);
+}
+@media (hover: hover) and (pointer: fine) {
+  .hema-common-logs .hema-log-table tbody tr:hover {
+    background-color: color-mix(in srgb, var(--primary) 4%, var(--log-surface));
+  }
+}
+@container hema-logs (max-width: 850px) {
+  .hema-log-filters .hema-log-primary-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .hema-log-primary-grid > :first-child {
+    grid-column: 1 / -1;
+  }
+  .hema-log-filters .hema-log-advanced-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .hema-log-stat {
+    padding: 10px;
+  }
+  .hema-log-stat dd {
+    font-size: 17px;
+  }
+  .hema-log-stat-caption {
+    font-size: 10px;
+  }
+  .hema-log-filter-drawer :is(input, [data-slot='select-trigger'], button) {
+    min-height: 44px;
+  }
+  .hema-log-filter-drawer [data-slot='drawer-footer'] {
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+  .hema-log-details {
+    border-radius: 10px;
+  }
+  .hema-log-details .hema-log-detail-section > div {
+    padding: 10px;
+  }
+  .hema-log-details .hema-log-detail-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3px;
+  }
+}
+@media (max-height: 600px) and (min-width: 641px) {
+  .hema-common-logs {
+    overflow-y: auto;
+  }
+  .hema-common-logs .hema-log-table {
+    flex: 1 0 240px;
+  }
+}
+body .hema-log-details {
+  animation-duration: 200ms;
+}
+body .hema-log-filter-drawer {
+  transition-duration: 220ms;
+  transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hema-common-logs *,
+  .hema-log-details,
+  .hema-log-details *,
+  .hema-log-filter-drawer,
+  .hema-log-filter-drawer * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Model catalog: scoped presentation over the existing pricing workflow. */
+.hema-catalog-v2 .hema-catalog-content {
+  max-width: 1520px;
+  padding: 5.5rem clamp(1rem, 3vw, 2.5rem) 3rem;
+}
+.hema-catalog-v2 .hema-catalog-content::before {
+  display: none;
+}
+.hema-catalog-v2 .hema-catalog-hero {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  align-items: center;
+  gap: 2rem;
+  margin: 0 0 1.75rem;
+  padding: 1rem 0 2rem;
+}
+.hema-catalog-v2 .hema-catalog-hero > div:last-child {
+  width: auto;
+}
+.hema-catalog-eyebrow {
+  margin-bottom: 0.75rem;
+  color: var(--hema-muted);
+  font:
+    500 10px/1.4 ui-monospace,
+    monospace;
+  letter-spacing: 0.16em;
+}
+.hema-catalog-v2 .hema-catalog-hero h1 {
+  font-size: clamp(1.9rem, 3.2vw, 2.75rem);
+  font-weight: 600;
+  line-height: 1.18;
+  letter-spacing: -0.035em;
+}
+.hema-catalog-count {
+  margin-top: 0.75rem;
+  color: var(--hema-muted);
+  font-size: 12px;
+}
+.hema-catalog-description {
+  max-width: 52ch;
+  margin-bottom: 0.875rem;
+  color: var(--hema-muted);
+  font-size: 13px;
+  line-height: 1.8;
+  text-wrap: pretty;
+}
+.hema-catalog-v2 .hema-catalog-search input {
+  height: 3rem;
+  border: 1px solid var(--hema-line);
+  border-radius: 8px;
+  background: var(--hema-surface-strong);
+  padding-left: 2.6rem;
+}
+.hema-catalog-workspace {
+  display: grid;
+  grid-template-columns: 216px minmax(0, 1fr);
+  gap: 2rem;
+}
+.hema-catalog-results {
+  container: hema-catalog-results / inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.hema-catalog-v2 .hema-pricing-sidebar {
+  padding: 0 1rem 0 0;
+  border: 0;
+  border-right: 1px solid var(--hema-line);
+  border-radius: 0;
+  background: transparent;
+}
+.hema-catalog-desktop-filters {
+  position: sticky;
+  top: 5.5rem;
+  max-height: calc(100dvh - 6.5rem);
+  overflow-y: auto;
+  align-self: start;
+  scrollbar-gutter: stable;
+}
+.hema-catalog-v2 .hema-pricing-sidebar > div:first-child p {
+  line-height: 1.6;
+}
+.hema-catalog-filter-section {
+  padding-block: 0.375rem 1rem;
+}
+.hema-catalog-filter-section > button {
+  min-height: 44px;
+}
+.hema-catalog-filter-list {
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.hema-catalog-filter-list .hema-catalog-filter-option {
+  width: 100%;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  border-color: transparent;
+  background: transparent;
+}
+.hema-catalog-filter-list
+  .hema-catalog-filter-option
+  > span:last-child:not(:first-child) {
+  margin-left: auto;
+}
+.hema-catalog-v2 .hema-catalog-filter-option,
+.hema-catalog-filter-sheet .hema-catalog-filter-option {
+  min-height: 32px;
+  border-radius: 6px;
+  padding: 0.375rem 0.5rem;
+  font-size: 12px;
+  font-weight: 450;
+}
+.hema-catalog-filter-option[aria-pressed='true'] {
+  box-shadow: inset 2px 0 var(--hema-signal);
+}
+.hema-catalog-v2 .hema-catalog-toolbar {
+  border: 1px solid var(--hema-line);
+  border-radius: 10px;
+  padding: 0;
+  background: var(--hema-surface-strong);
+}
+.hema-catalog-toolbar-heading {
+  padding: 0.75rem 1rem;
+}
+.hema-catalog-toolbar-heading [role='status'] > span:first-child {
+  font-size: 18px;
+  margin-right: 0.25rem;
+}
+.hema-catalog-display-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--hema-line);
+  background: color-mix(in srgb, var(--hema-bg) 35%, transparent);
+}
+.hema-catalog-control {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.hema-catalog-control > span {
+  color: var(--hema-muted);
+  font-size: 11px;
+}
+.hema-catalog-sort {
+  margin-left: auto;
+}
+.hema-catalog-sort > button {
+  max-width: 100%;
+}
+.hema-catalog-sort > button > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hema-catalog-toolbar button {
+  border-radius: 5px;
+}
+.hema-catalog-filter-toggle {
+  display: none;
+}
+.hema-catalog-active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--hema-line);
+}
+.hema-catalog-active-filters > button {
+  max-width: 100%;
+  gap: 0.5rem;
+  font-size: 12px;
+}
+.hema-catalog-v2 .hema-model-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  gap: 1rem;
+}
+.hema-catalog-v2 .hema-model-card {
+  gap: 1rem;
+  padding: 1.25rem 0 0;
+  border: 1px solid var(--hema-line);
+  border-radius: 12px;
+  background: var(--hema-surface-strong);
+  box-shadow: none;
+  transform: none;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+.hema-catalog-v2 .hema-model-card [data-slot='card-header'],
+.hema-catalog-v2 .hema-model-card [data-slot='card-content'] {
+  padding-inline: 1.25rem;
+}
+.hema-catalog-v2 .hema-model-card-header {
+  align-items: center;
+}
+.hema-catalog-v2 .hema-model-icon {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--hema-line);
+  border-radius: 10px;
+}
+.hema-model-vendor {
+  margin-bottom: 0.25rem;
+  color: var(--hema-muted);
+  font-size: 11px;
+}
+.hema-catalog-v2 .hema-model-card h3 {
+  -webkit-line-clamp: unset;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.hema-catalog-v2 .hema-model-title {
+  display: inline;
+  height: auto;
+  min-height: 0;
+  width: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.hema-catalog-v2 .hema-model-pricing {
+  gap: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--hema-line) 60%, transparent);
+  border-radius: 8px;
+  padding: 0.875rem;
+  background: color-mix(
+    in srgb,
+    var(--hema-bg) 45%,
+    var(--hema-surface-strong)
+  );
+}
+.hema-catalog-v2 .hema-model-price-values {
+  grid-template-columns: repeat(auto-fit, minmax(76px, 1fr));
+  gap: 0.75rem;
+}
+.hema-catalog-v2 .hema-model-price-values > div > .font-mono {
+  font-size: 18px;
+  font-weight: 550;
+  line-height: 1.5;
+  letter-spacing: -0.04em;
+  overflow-wrap: anywhere;
+}
+.hema-catalog-v2 .hema-model-price-values > div > .font-mono > .text-xs {
+  font-size: 10px;
+  letter-spacing: 0;
+}
+.hema-catalog-v2 .hema-model-metadata {
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+.hema-catalog-v2 .hema-model-metadata dt {
+  width: 3.25rem;
+}
+.hema-catalog-v2 .hema-model-card-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem 1rem;
+  border-top: 1px solid var(--hema-line);
+  background: color-mix(
+    in srgb,
+    var(--hema-bg) 18%,
+    var(--hema-surface-strong)
+  );
+}
+.hema-model-card-footer-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.hema-model-card-footer-heading > span {
+  color: var(--hema-muted);
+  font-size: 10px;
+}
+.hema-catalog-v2 .hema-model-card-footer-heading > button {
+  gap: 1rem;
+  height: 28px;
+  padding-inline: 0.5rem;
+  color: var(--hema-signal);
+  border-radius: 5px;
+}
+.hema-model-card-footer dl {
+  width: 100%;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.hema-catalog-filter-footer {
+  display: flex;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  border-top: 1px solid var(--hema-line);
+  padding: 1rem 1.5rem max(1rem, env(safe-area-inset-bottom));
+  background: var(--background);
+}
+.hema-catalog-filter-footer > button {
+  min-height: 44px;
+}
+.hema-catalog-details .hema-model-detail-header h1 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
+}
+.hema-catalog-details .hema-model-detail-header > div:first-child {
+  align-items: flex-start;
+}
+.hema-catalog-details .hema-model-detail-header svg,
+.hema-catalog-details .hema-model-detail-header button {
+  flex-shrink: 0;
+}
+.hema-catalog-details .hema-model-detail-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  min-height: 48px;
+  border: 1px solid var(--hema-line);
+  border-radius: 8px;
+  background: var(--background);
+}
+.hema-catalog-details .hema-model-detail-content > header {
+  border-bottom: 1px solid var(--hema-line);
+}
+.hema-catalog-v2 :is(button, input):focus-visible,
+.hema-catalog-filter-sheet button:focus-visible,
+.hema-catalog-details button:focus-visible {
+  outline: 2px solid var(--hema-signal);
+  outline-offset: 3px;
+}
+.hema-catalog-filter-sheet,
+.hema-catalog-details {
+  animation-duration: 220ms;
+  transition-duration: 220ms;
+}
+@media (hover: hover) and (pointer: fine) {
+  .hema-catalog-v2 .hema-model-card:hover {
+    border-color: color-mix(in srgb, var(--hema-signal) 50%, var(--hema-line));
+    box-shadow: 0 3px 14px -8px
+      color-mix(in srgb, var(--hema-ink) 25%, transparent);
+  }
+  .hema-catalog-v2 .hema-model-title:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+}
+@container hema-catalog-results (max-width: 700px) {
+  .hema-catalog-sort {
+    margin-left: 0;
+  }
+}
+@media (max-width: 1023px) {
+  .hema-catalog-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .hema-catalog-desktop-filters {
+    display: none;
+  }
+  .hema-catalog-filter-toggle {
+    display: inline-flex;
+  }
+}
+@media (max-width: 639px) {
+  .hema-catalog-v2 .hema-catalog-content {
+    padding-top: 4.5rem;
+  }
+  .hema-catalog-v2 .hema-catalog-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+    padding-block: 0.75rem 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .hema-catalog-eyebrow {
+    font-size: 9px;
+  }
+  .hema-catalog-v2 .hema-catalog-hero h1 {
+    font-size: 2rem;
+  }
+  .hema-catalog-description {
+    font-size: 12px;
+  }
+  .hema-catalog-display-controls {
+    gap: 0.75rem 1rem;
+  }
+  .hema-catalog-control {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.375rem;
+  }
+  .hema-catalog-sort {
+    flex: 1 1 100%;
+  }
+  .hema-catalog-sort > button {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .hema-catalog-sort > span {
+    display: none;
+  }
+  .hema-catalog-v2 .hema-catalog-toolbar button {
+    min-height: 40px;
+  }
+  .hema-catalog-v2 .hema-catalog-search input {
+    font-size: 16px;
+  }
+  .hema-catalog-filter-sheet .hema-catalog-filter-option {
+    min-height: 44px;
+  }
+  .hema-catalog-v2 .hema-model-card [data-slot='card-header'],
+  .hema-catalog-v2 .hema-model-card [data-slot='card-content'] {
+    padding-inline: 1rem;
+  }
+  .hema-catalog-v2 .hema-model-card-footer {
+    padding-inline: 1rem;
+  }
+  .hema-catalog-v2 .hema-model-card-footer-heading > button {
+    min-height: 40px;
+  }
+  .hema-catalog-v2 .hema-model-card-header > button {
+    min-width: 40px;
+    min-height: 40px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hema-catalog-v2 *,
+  .hema-catalog-details,
+  .hema-catalog-details *,
+  .hema-catalog-filter-sheet,
+  .hema-catalog-filter-sheet * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+.hema-catalog-filter-footer > button:first-child {
+  width: auto;
+  min-width: 5rem;
+}
+.hema-catalog-filter-footer > button:last-child {
+  flex: 1;
+}
+@media (max-width: 639px) {
+  .hema-catalog-v2 .hema-catalog-toolbar button,
+  .hema-catalog-v2 .hema-model-card-footer-heading > button {
+    min-height: 44px;
+  }
+  .hema-catalog-v2 .hema-model-card-header > button,
+  .hema-catalog-toolbar-heading [role='group'] button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+.hema-catalog-v2 .hema-catalog-search input::placeholder {
+  color: var(--hema-muted);
+  opacity: 1;
+}
+.dark .hema-catalog-v2 .hema-model-pricing,
+.dark .hema-catalog-details {
+  --warning: #d7bb76;
 }

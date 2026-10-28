@@ -54,6 +54,8 @@ type FilterSectionProps = {
   value: string
   options: FilterOption[]
   onChange: (value: string) => void
+  list?: boolean
+  defaultOpen?: boolean
 }
 
 export interface PricingSidebarProps {
@@ -75,6 +77,8 @@ export interface PricingSidebarProps {
   hasActiveFilters: boolean
   onClearFilters: () => void
   className?: string
+  hideHeader?: boolean
+  startCollapsed?: boolean
 }
 
 function formatGroupRatio(ratio: number | undefined): string | undefined {
@@ -97,11 +101,13 @@ function FilterChip(props: {
       size='sm'
       onClick={props.onClick}
       aria-pressed={props.active}
-      className='h-auto max-w-full gap-1.5 px-2 py-1 text-xs'
+      className='hema-catalog-filter-option h-auto max-w-full gap-1.5 px-2 py-1 text-xs'
       title={props.option.label}
     >
       {props.option.icon && (
-        <span className='shrink-0'>{props.option.icon}</span>
+        <span className='shrink-0' aria-hidden>
+          {props.option.icon}
+        </span>
       )}
       <span className='truncate'>{props.option.label}</span>
       {(props.option.suffix || props.option.count != null) && (
@@ -123,8 +129,8 @@ function FilterChip(props: {
 function FilterSection(props: FilterSectionProps) {
   return (
     <Collapsible
-      defaultOpen
-      className='border-border/70 border-b pb-3 last:border-b-0'
+      defaultOpen={props.defaultOpen ?? true}
+      className='hema-catalog-filter-section border-border/70 border-b pb-3 last:border-b-0'
     >
       <CollapsibleTrigger className='group flex w-full items-center justify-between py-2.5 text-left'>
         <span className='text-foreground text-sm font-semibold'>
@@ -133,7 +139,12 @@ function FilterSection(props: FilterSectionProps) {
         <ChevronDown className='text-muted-foreground size-4 transition-transform group-data-[panel-open]:rotate-180' />
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <div className='flex flex-wrap gap-1.5'>
+        <div
+          className={cn(
+            'flex flex-wrap gap-1.5',
+            props.list && 'hema-catalog-filter-list'
+          )}
+        >
           {props.options.map((option) => (
             <FilterChip
               key={option.value}
@@ -271,25 +282,27 @@ export const PricingSidebar = memo(function PricingSidebar(
         props.className
       )}
     >
-      <div className='mb-2.5 flex items-center justify-between gap-2'>
-        <div>
-          <h2 className='text-foreground text-sm font-bold'>{t('Filter')}</h2>
-          <p className='text-muted-foreground mt-1 text-xs'>
-            {t('Refine models by provider, group, type, and tags.')}
-          </p>
+      {!props.hideHeader && (
+        <div className='mb-2.5 flex items-center justify-between gap-2'>
+          <div>
+            <h2 className='text-foreground text-sm font-bold'>{t('Filter')}</h2>
+            <p className='text-muted-foreground mt-1 text-xs'>
+              {t('Refine models by provider, group, type, and tags.')}
+            </p>
+          </div>
+          <Button
+            type='button'
+            variant='ghost'
+            size='sm'
+            onClick={props.onClearFilters}
+            disabled={!props.hasActiveFilters}
+            className='h-7 gap-1.5 px-2 text-xs'
+          >
+            <RotateCcw className='size-3.5' />
+            {t('Reset')}
+          </Button>
         </div>
-        <Button
-          type='button'
-          variant='ghost'
-          size='sm'
-          onClick={props.onClearFilters}
-          disabled={!props.hasActiveFilters}
-          className='h-7 gap-1.5 px-2 text-xs'
-        >
-          <RotateCcw className='size-3.5' />
-          {t('Reset')}
-        </Button>
-      </div>
+      )}
 
       {props.hasActiveFilters && (
         <Badge variant='secondary' className='mb-3'>
@@ -299,31 +312,42 @@ export const PricingSidebar = memo(function PricingSidebar(
 
       <div className='space-y-1'>
         <FilterSection
+          title={t('All Vendors')}
+          value={props.vendorFilter}
+          options={vendorOptions}
+          onChange={props.onVendorChange}
+          list
+        />
+        <FilterSection
           title={t('Groups')}
+          defaultOpen={
+            !props.startCollapsed || props.groupFilter !== FILTER_ALL
+          }
           value={props.groupFilter}
           options={groupOptions}
           onChange={props.onGroupChange}
         />
         <FilterSection
-          title={t('All Vendors')}
-          value={props.vendorFilter}
-          options={vendorOptions}
-          onChange={props.onVendorChange}
-        />
-        <FilterSection
           title={t('Model Tags')}
+          defaultOpen={!props.startCollapsed || props.tagFilter !== FILTER_ALL}
           value={props.tagFilter}
           options={tagOptions}
           onChange={props.onTagChange}
         />
         <FilterSection
           title={t('Pricing Type')}
+          defaultOpen={
+            !props.startCollapsed || props.quotaTypeFilter !== FILTER_ALL
+          }
           value={props.quotaTypeFilter}
           options={quotaOptions}
           onChange={props.onQuotaTypeChange}
         />
         <FilterSection
           title={t('Endpoint Type')}
+          defaultOpen={
+            !props.startCollapsed || props.endpointTypeFilter !== FILTER_ALL
+          }
           value={props.endpointTypeFilter}
           options={endpointOptions}
           onChange={props.onEndpointTypeChange}

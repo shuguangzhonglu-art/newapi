@@ -132,6 +132,11 @@ export type PricingData = {
   auto_groups: string[]
 }
 
+/** The Go API sends description strings; older adapters may send objects. */
+export type PricingResponse = Omit<PricingData, 'usable_group'> & {
+  usable_group: Record<string, string | { desc: string; ratio: number }>
+}
+
 export type TokenUnit = 'M' | 'K'
 export type PriceType =
   | 'input'

@@ -17,13 +17,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import type { Row, PaginationState } from '@tanstack/react-table'
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import {
   DataTablePagination,
   DataTableRow,
   DataTableView,
+  DataTableViewOptions,
   useDataTable,
 } from '@/components/data-table'
 
@@ -66,6 +67,8 @@ export function PricingTable(props: PricingTableProps) {
     usdExchangeRate,
     showRechargePrice,
     selectedGroup,
+    compact: true,
+    onModelClick,
   })
 
   const { table } = useDataTable({
@@ -78,17 +81,17 @@ export function PricingTable(props: PricingTableProps) {
     withFilteredRowModel: false,
     withSortedRowModel: false,
     withFacetedRowModel: false,
+    initialColumnVisibility: {
+      cached_price: false,
+      vendor_name: false,
+      tags: false,
+      supported_endpoint_types: false,
+      enable_groups: false,
+    },
   })
 
-  const handleRowClick = useCallback(
-    (model: PricingModel) => {
-      onModelClick?.(model.model_name)
-    },
-    [onModelClick]
-  )
-
   return (
-    <div className='space-y-4'>
+    <div className='hema-catalog-table space-y-4'>
       <DataTableView
         table={table}
         isLoading={isLoading}
@@ -96,6 +99,8 @@ export function PricingTable(props: PricingTableProps) {
         emptyDescription={t('No models match your current filters.')}
         skeletonKeyPrefix='pricing-skeleton'
         applyHeaderSize
+        containerClassName='hema-catalog-table-container'
+        tableClassName='hema-catalog-table-content'
         getColumnClassName={(_columnId, kind) =>
           kind === 'header' ? 'text-muted-foreground font-medium' : undefined
         }
@@ -104,12 +109,23 @@ export function PricingTable(props: PricingTableProps) {
             key={row.id}
             row={row}
             className='hover:bg-muted/30 cursor-pointer transition-colors'
-            onClick={() => handleRowClick(row.original)}
+            cellRenderColumns={columns}
+            onClick={(event) => {
+              if ((event.target as HTMLElement).closest('button, a, input')) {
+                return
+              }
+              onModelClick?.(row.original.model_name)
+            }}
           />
         )}
       />
 
-      {!isLoading && models.length > 0 && <DataTablePagination table={table} />}
+      {!isLoading && models.length > 0 && (
+        <div className='hema-catalog-table-footer flex flex-wrap items-center justify-between gap-3'>
+          <DataTableViewOptions table={table} />
+          <DataTablePagination table={table} />
+        </div>
+      )}
     </div>
   )
 }

@@ -55,6 +55,63 @@ const summaryOptions = {
 }
 
 describe('expression price summaries', () => {
+  test('opt-in catalog ranges use the cheapest token tier and retain group and recharge conversion', () => {
+    const summary = getDynamicPricingSummary(
+      pricingModel({
+        billing_mode: 'tiered_expr',
+        billing_expr:
+          'len < 1000 ? tier("first", p * 4 + c * 12) : tier("cheaper", p * 2 + c * 6)',
+      }),
+      {
+        tokenUnit: 'M',
+        includeTierRanges: true,
+        groupRatioMultiplier: 0.8,
+        showRechargePrice: true,
+        priceRate: 3,
+        usdExchangeRate: 6,
+      }
+    )
+    expect(summary?.tier?.label).toBe('first')
+    expect(summary?.primaryEntries.map((entry) => entry.value)).toEqual([2, 6])
+    expect(
+      summary?.primaryEntries.map((entry) => entry.formattedRange)
+    ).toEqual(['$0.8 – $1.6', '$2.4 – $4.8'])
+  })
+
+  test('opt-in catalog ranges use only active time tiers and keep request prices separate', () => {
+    const summary = getDynamicPricingSummary(
+      pricingModel({
+        billing_mode: 'tiered_expr',
+        billing_expr:
+          'hour("UTC") < 12 ? (len < 1000 ? tier("first", p * 4 + c * 12) : tier("cheaper", p * 2 + c * 6)) : tier("night", p * 1 + c * 3)',
+      }),
+      {
+        tokenUnit: 'M',
+        includeTierRanges: true,
+        now: new Date('2026-09-07T10:00:00Z'),
+      }
+    )
+    expect(summary?.primaryEntries.map((entry) => entry.value)).toEqual([2, 6])
+    expect(summary?.primaryEntries[0].formattedRange).toBe('$2 – $4')
+    const mixed = getDynamicPricingSummary(
+      pricingModel({
+        billing_mode: 'tiered_expr',
+        billing_expr:
+          'len < 100 ? tier("once", fixed(0.02)) : len < 200 ? tier("cheap", fixed(0)) : len < 300 ? tier("tokens", p * 4 + c * 12) : tier("tokens-cheap", p * 2 + c * 6)',
+      }),
+      { tokenUnit: 'K', includeTierRanges: true }
+    )
+    expect(mixed?.isMixedBilling).toBe(true)
+    expect(
+      mixed?.primaryEntries.find((entry) => entry.unit === 'request')
+        ?.formattedRange
+    ).toBe('$0 – $0.02')
+    expect(
+      mixed?.primaryEntries.find((entry) => entry.field === 'inputPrice')
+        ?.formattedRange
+    ).toBe('$0.002 – $0.004')
+  })
+
   test('keeps request prices unchanged by token units and separates mixed billing units', () => {
     const model = pricingModel({
       billing_mode: 'tiered_expr',

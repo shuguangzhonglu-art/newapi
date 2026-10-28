@@ -46,6 +46,8 @@ import {
 import { getTaskPricingDisplayTiers } from './task-matrix-display'
 
 export type DynamicPriceOptions = {
+  /** Catalog summaries may show ranges; other consumers retain first-tier semantics. */
+  includeTierRanges?: boolean
   tokenUnit: TokenUnit
   showCurrencySymbol?: boolean
   showRechargePrice?: boolean
@@ -529,6 +531,45 @@ export function getDynamicPricingSummary(
         ...getDynamicPriceEntries(requestTier, options),
       ]
     }
+  }
+  if (options.includeTierRanges && !isTaskUsage && summaryTiers.length > 1) {
+    const ranges = new Map<
+      string,
+      { entry: DynamicPriceEntry; min: number; max: number }
+    >()
+    for (const priceTier of summaryTiers) {
+      for (const entry of getDynamicPriceEntries(priceTier, options)) {
+        const key = `${entry.field}:${entry.unit}`
+        const previous = ranges.get(key)
+        ranges.set(key, {
+          entry: previous?.entry ?? entry,
+          min: Math.min(previous?.min ?? Infinity, entry.value),
+          max: Math.max(previous?.max ?? -Infinity, entry.value),
+        })
+      }
+    }
+    entries = [...ranges.values()]
+      .map(({ entry, min, max }) => {
+        const format = entry.variable
+          ? formatDynamicUnitPrice
+          : formatTaskUsageUnitPrice
+        const minimum = format(min, options)
+        const maximum = format(max, options)
+        return {
+          ...entry,
+          value: min,
+          minValue: min,
+          maxValue: max,
+          formatted: minimum,
+          formattedRange:
+            minimum === maximum ? undefined : `${minimum} – ${maximum}`,
+        }
+      })
+      .sort(
+        (first, second) =>
+          Number(PRIMARY_DYNAMIC_FIELDS.has(second.field)) -
+          Number(PRIMARY_DYNAMIC_FIELDS.has(first.field))
+      )
   }
   if (isTaskUsage) {
     const priceRanges = new Map<string, { min: number; max: number }>()

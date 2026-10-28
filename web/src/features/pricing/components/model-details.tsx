@@ -21,10 +21,9 @@ import { useNavigate, useParams, useSearch } from '@tanstack/react-router'
 import {
   ArrowLeft,
   CalendarClock,
-  Code2,
+  ChevronDown,
   FileText,
   HeartPulse,
-  Info,
   Layers,
   Maximize2,
   Sparkles,
@@ -39,6 +38,11 @@ import { sideDrawerContentClassName } from '@/components/drawer-layout'
 import { GroupBadge } from '@/components/group-badge'
 import { PublicLayout } from '@/components/layout'
 import { Button } from '@/components/ui/button'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 import {
   Sheet,
   SheetContent,
@@ -81,6 +85,7 @@ import { parseTags } from '../lib/filters'
 import { getAvailableGroups, isTokenBasedModel } from '../lib/model-helpers'
 import { withPluginPricing } from '../lib/plugin-pricing'
 import { formatFixedPrice, formatGroupPrice } from '../lib/price'
+import { getModelPriceLedger } from '../lib/price-ledger'
 import {
   evaluateTaskUsageExamples,
   getTaskEnumFields,
@@ -104,6 +109,7 @@ import { DynamicPricingBreakdown } from './dynamic-pricing-breakdown'
 import { ModelBillingModeBadge } from './model-billing-mode-badge'
 import { ModelDetailsApi } from './model-details-api'
 import { ModelDetailsPerformance } from './model-details-performance'
+import { ModelPriceLedgerView } from './model-price-ledger'
 
 // ----------------------------------------------------------------------------
 // Local UI helpers
@@ -599,13 +605,12 @@ function ModelHeader(props: { model: PricingModel }) {
   const model = props.model
   const modelIconKey = model.icon || model.vendor_icon
   const modelIcon = modelIconKey ? getLobeIcon(modelIconKey, 20) : null
-  const description = model.description || model.vendor_description || null
 
   return (
-    <header className='pb-4'>
+    <header className='hema-model-detail-header pb-4'>
       <div className='flex items-center gap-2.5'>
         {modelIcon}
-        <h1 className='font-mono text-xl font-bold tracking-tight sm:text-2xl'>
+        <h1 className='min-w-0 text-2xl font-medium tracking-tight break-words'>
           {model.model_name}
         </h1>
         <CopyButton
@@ -624,11 +629,6 @@ function ModelHeader(props: { model: PricingModel }) {
         <span className='text-muted-foreground/30'>·</span>
         <ModelBillingModeBadge model={model} />
       </div>
-      {description && (
-        <p className='text-muted-foreground mt-2 text-sm leading-relaxed'>
-          {description}
-        </p>
-      )}
     </header>
   )
 }
@@ -1167,7 +1167,7 @@ function ProviderGroupPricingSection(
     })
     const formattedPricesByGroup = new Map(
       availableGroups.map((group) => {
-        const ratio = props.groupRatio[group] || 1
+        const ratio = props.groupRatio[group] ?? Number.NaN
         return [
           group,
           getDynamicFormattedPricesByTier(dynamicTiers, {
@@ -1190,7 +1190,7 @@ function ProviderGroupPricingSection(
         <AutoGroupChain model={props.model} autoGroups={props.autoGroups} />
         <div className='space-y-3'>
           {availableGroups.map((group) => {
-            const ratio = props.groupRatio[group] || 1
+            const ratio = props.groupRatio[group] ?? Number.NaN
             const formattedPricesByTier =
               formattedPricesByGroup.get(group) ??
               new Map<DynamicPricingTier, Map<string, string>>()
@@ -1200,7 +1200,7 @@ function ProviderGroupPricingSection(
                 <div className='bg-muted/20 flex items-center justify-between gap-3 border-b px-3 py-2'>
                   <GroupBadge group={group} size='sm' />
                   <span className='text-muted-foreground font-mono text-xs'>
-                    {ratio}x
+                    {Number.isFinite(ratio) ? `${ratio}×` : '—'}
                   </span>
                 </div>
                 <StaticDataTable
@@ -1352,8 +1352,14 @@ function ProviderGroupPricingSection(
     )
   }
 
-  const renderGroupPrice = (group: string, type: PriceType) =>
-    formatGroupPrice(
+  const renderGroupPrice = (group: string, type: PriceType) => {
+    if (
+      !Number.isFinite(props.groupRatio[group]) ||
+      props.groupRatio[group] < 0
+    ) {
+      return '—'
+    }
+    return formatGroupPrice(
       props.model,
       group,
       type,
@@ -1363,8 +1369,15 @@ function ProviderGroupPricingSection(
       props.usdExchangeRate,
       props.groupRatio
     )
-  const renderFixedGroupPrice = (group: string) =>
-    formatFixedPrice(
+  }
+  const renderFixedGroupPrice = (group: string) => {
+    if (
+      !Number.isFinite(props.groupRatio[group]) ||
+      props.groupRatio[group] < 0
+    ) {
+      return '—'
+    }
+    return formatFixedPrice(
       props.model,
       group,
       showRechargePrice,
@@ -1372,6 +1385,7 @@ function ProviderGroupPricingSection(
       props.usdExchangeRate,
       props.groupRatio
     )
+  }
 
   return (
     <section>
@@ -1396,7 +1410,10 @@ function ProviderGroupPricingSection(
             header: t('Ratio'),
             className: thClass,
             cellClassName: 'text-muted-foreground py-2.5 font-mono',
-            cell: (group) => `${props.groupRatio[group] || 1}x`,
+            cell: (group) =>
+              Number.isFinite(props.groupRatio[group])
+                ? `${props.groupRatio[group]}×`
+                : '—',
           },
           ...(isTokenBased
             ? [
@@ -1444,16 +1461,21 @@ function ProviderGroupPricingSection(
   )
 }
 
-const TAB_VALUES = ['overview', 'performance', 'api'] as const
-type TabValue = (typeof TAB_VALUES)[number]
-
-const TAB_META: Record<
-  TabValue,
-  { icon: React.ComponentType<{ className?: string }>; labelKey: string }
-> = {
-  overview: { icon: Info, labelKey: 'Overview' },
-  performance: { icon: HeartPulse, labelKey: 'Performance' },
-  api: { icon: Code2, labelKey: 'API' },
+function DetailDisclosure(props: { title: string; children: React.ReactNode }) {
+  return (
+    <Collapsible className='hema-detail-disclosure'>
+      <CollapsibleTrigger
+        className='hema-detail-disclosure-trigger'
+        render={<Button variant='ghost' />}
+      >
+        <span>{props.title}</span>
+        <ChevronDown aria-hidden className='size-4' />
+      </CollapsibleTrigger>
+      <CollapsibleContent className='hema-detail-disclosure-body'>
+        {props.children}
+      </CollapsibleContent>
+    </Collapsible>
+  )
 }
 
 export interface ModelDetailsContentProps {
@@ -1471,11 +1493,22 @@ export interface ModelDetailsContentProps {
 export function ModelDetailsContent(props: ModelDetailsContentProps) {
   const { t } = useTranslation()
   const showRechargePrice = props.showRechargePrice ?? false
-
-  const isDynamic =
-    props.model.billing_mode === 'tiered_expr' &&
-    Boolean(props.model.billing_expr)
-
+  // Price formatters read the current configured currency; subscribe to changes.
+  useSystemConfigStore((state) => state.config.currency)
+  const billingTime = useBillingTime(props.model.billing_expr)
+  const ledger = getModelPriceLedger(
+    props.model,
+    {
+      tokenUnit: props.tokenUnit,
+      showRechargePrice,
+      priceRate: props.priceRate,
+      usdExchangeRate: props.usdExchangeRate,
+      now: billingTime === undefined ? undefined : new Date(billingTime),
+    },
+    props.groupRatio,
+    props.usableGroup
+  )
+  const isDynamic = isDynamicPricingModel(props.model)
   const simpleTaskPricing = hasSimpleTaskPricing(props.model)
   const taskTiers = getTaskPricingDisplayTiers(
     props.model.billing_expr,
@@ -1485,79 +1518,78 @@ export function ModelDetailsContent(props: ModelDetailsContentProps) {
     !props.model.billing_usage_schema ||
     simpleTaskPricing ||
     taskTiers.length === 0
+  const pricingDetails = (
+    <div className='hema-detail-pricing-rules space-y-6'>
+      {showBasePrices && (
+        <PriceSection
+          model={props.model}
+          priceRate={props.priceRate}
+          usdExchangeRate={props.usdExchangeRate}
+          tokenUnit={props.tokenUnit}
+          showRechargePrice={showRechargePrice}
+        />
+      )}
+      {isDynamic && !simpleTaskPricing && (
+        <DynamicPricingBreakdown
+          billingExpr={props.model.billing_expr}
+          usageSchema={props.model.billing_usage_schema}
+          taskPriceOptions={{
+            showRechargePrice,
+            priceRate: props.priceRate,
+            usdExchangeRate: props.usdExchangeRate,
+          }}
+        />
+      )}
+      <GroupPricingSection
+        model={props.model}
+        groupRatio={props.groupRatio}
+        usableGroup={props.usableGroup}
+        autoGroups={props.autoGroups}
+        priceRate={props.priceRate}
+        usdExchangeRate={props.usdExchangeRate}
+        tokenUnit={props.tokenUnit}
+        showRechargePrice={showRechargePrice}
+      />
+    </div>
+  )
 
   return (
-    <div className='@container/details space-y-4'>
+    <div className='hema-model-detail-content @container/details'>
       <ModelHeader model={props.model} />
-
-      <Tabs defaultValue='overview' className='gap-4'>
-        <TabsList className='bg-muted/60 grid w-full grid-cols-3 gap-1 rounded-lg p-1 group-data-horizontal/tabs:h-auto'>
-          {TAB_VALUES.map((value) => {
-            const Icon = TAB_META[value].icon
-            return (
-              <TabsTrigger
-                key={value}
-                value={value}
-                className='h-8 min-w-0 gap-1.5 rounded-md px-3 text-xs sm:text-sm'
-              >
-                <Icon className='size-3.5' />
-                <span className='truncate'>{t(TAB_META[value].labelKey)}</span>
-              </TabsTrigger>
-            )
-          })}
-        </TabsList>
-
-        <TabsContent value='overview' className='space-y-6 outline-none'>
-          <OverviewSummaryGrid model={props.model} />
-
-          <section className='bg-card/60 space-y-5 rounded-xl border p-4 shadow-sm'>
-            <SectionTitle>{t('Pricing')}</SectionTitle>
-            {showBasePrices && (
-              <PriceSection
-                model={props.model}
-                priceRate={props.priceRate}
-                usdExchangeRate={props.usdExchangeRate}
-                tokenUnit={props.tokenUnit}
-                showRechargePrice={showRechargePrice}
-              />
-            )}
-            {isDynamic && !simpleTaskPricing && (
-              <DynamicPricingBreakdown
-                billingExpr={props.model.billing_expr}
-                usageSchema={props.model.billing_usage_schema}
-                taskPriceOptions={{
-                  showRechargePrice,
-                  priceRate: props.priceRate,
-                  usdExchangeRate: props.usdExchangeRate,
-                }}
-              />
-            )}
-            <GroupPricingSection
-              model={props.model}
-              groupRatio={props.groupRatio}
-              usableGroup={props.usableGroup}
-              autoGroups={props.autoGroups}
-              priceRate={props.priceRate}
-              usdExchangeRate={props.usdExchangeRate}
-              tokenUnit={props.tokenUnit}
-              showRechargePrice={showRechargePrice}
-            />
-          </section>
-
-          <ModelBackendDetailsSection model={props.model} />
-        </TabsContent>
-
-        <TabsContent value='performance' className='outline-none'>
-          <ModelDetailsPerformance model={props.model} />
-        </TabsContent>
-
-        <TabsContent value='api' className='outline-none'>
+      {ledger ? (
+        <ModelPriceLedgerView
+          ledger={ledger}
+          tokenUnit={props.tokenUnit}
+          showRechargePrice={showRechargePrice}
+        />
+      ) : (
+        pricingDetails
+      )}
+      {ledger?.hasRules && (
+        <DetailDisclosure title={t('Pricing rules')}>
+          {pricingDetails}
+        </DetailDisclosure>
+      )}
+      <div className='hema-detail-secondary'>
+        <DetailDisclosure title={t('API access')}>
           <ModelDetailsApi
             model={props.model}
             endpointMap={props.endpointMap}
           />
-        </TabsContent>
-      </Tabs>
+        </DetailDisclosure>
+        <DetailDisclosure title={t('Model information')}>
+          {props.model.description && (
+            <p className='text-muted-foreground text-sm'>
+              {props.model.description}
+            </p>
+          )}
+          <OverviewSummaryGrid model={props.model} />
+          <ModelBackendDetailsSection model={props.model} />
+        </DetailDisclosure>
+        <DetailDisclosure title={t('Performance')}>
+          <ModelDetailsPerformance model={props.model} />
+        </DetailDisclosure>
+      </div>
     </div>
   )
 }
@@ -1580,14 +1612,14 @@ export function ModelDetailsDrawer(props: ModelDetailsDrawerProps) {
       <SheetContent
         side='right'
         className={sideDrawerContentClassName(
-          'sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl'
+          'hema-catalog-details w-full sm:w-[92vw] sm:max-w-[1160px]'
         )}
       >
         <SheetHeader className='sr-only'>
           <SheetTitle>{props.model.model_name}</SheetTitle>
           <SheetDescription>{t('Model details')}</SheetDescription>
         </SheetHeader>
-        <div className='flex-1 overflow-y-auto px-4 pt-11 pb-5 sm:px-6 sm:pt-12 sm:pb-6'>
+        <div className='hema-detail-scroll flex-1 overflow-y-auto px-5 pt-12 pb-6 sm:px-10 sm:pt-14 sm:pb-10'>
           <ModelDetailsContent {...contentProps} />
         </div>
       </SheetContent>

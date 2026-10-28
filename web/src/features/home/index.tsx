@@ -16,7 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { useCallback, useEffect, useRef } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { PublicLayout } from '@/components/layout'
@@ -25,6 +25,12 @@ import { useTheme } from '@/context/theme-provider'
 import { isLikelyHtml } from '@/lib/content-format'
 
 import { useHomePageContent } from './hooks'
+
+const TuringHome = lazy(() =>
+  import('./components/turing-home').then((module) => ({
+    default: module.TuringHome,
+  }))
+)
 
 export function Home() {
   const { i18n, t } = useTranslation()
@@ -114,13 +120,22 @@ export function Home() {
   }
 
   return (
-    <main className='hema-home-frame-shell'>
-      <iframe
-        src='/hema-home/home.html'
-        className='hema-home-frame'
-        title={t('Home')}
-        sandbox='allow-scripts allow-top-navigation-by-user-activation'
-      />
-    </main>
+    <PublicLayout
+      className='hema-integrated-home-shell'
+      showMainContainer={false}
+    >
+      <Suspense
+        fallback={
+          <main className='hema-home-loading' aria-busy='true'>
+            <span
+              className='hema-home-loading-bar'
+              aria-label={t('Loading...')}
+            />
+          </main>
+        }
+      >
+        <TuringHome />
+      </Suspense>
+    </PublicLayout>
   )
 }

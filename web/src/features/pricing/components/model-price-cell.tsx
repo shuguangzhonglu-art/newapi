@@ -22,7 +22,7 @@ import { useTranslation } from 'react-i18next'
 import { getCurrencyLabel } from '@/lib/currency'
 import { useSystemConfigStore } from '@/stores/system-config-store'
 
-import { DEFAULT_TOKEN_UNIT } from '../constants'
+import { DEFAULT_TOKEN_UNIT, FILTER_ALL } from '../constants'
 import { useBillingTime } from '../hooks/use-billing-time'
 import {
   getDynamicDisplayGroupRatio,
@@ -30,7 +30,7 @@ import {
   getDynamicPricingSummary,
   isUnconfiguredTaskUsageModel,
 } from '../lib/dynamic-price'
-import { isTokenBasedModel } from '../lib/model-helpers'
+import { getCatalogGroupRatio, isTokenBasedModel } from '../lib/model-helpers'
 import { formatPrice, formatRequestPrice } from '../lib/price'
 import { taskUsageUnitLabel } from '../lib/task-price-display'
 import type { PricingModel, TokenUnit } from '../types'
@@ -41,6 +41,7 @@ export type ModelPriceCellOptions = {
   usdExchangeRate?: number
   showRechargePrice?: boolean
   selectedGroup?: string
+  compact?: boolean
 }
 
 export function ModelPriceCell(props: {
@@ -53,8 +54,11 @@ export function ModelPriceCell(props: {
   const currencyLabel =
     currency.quotaDisplayType === 'TOKENS' ? 'USD' : getCurrencyLabel()
   const options = props.options ?? {}
+  const compact = options.compact === true
   const tokenUnit = options.tokenUnit ?? DEFAULT_TOKEN_UNIT
   const tokenUnitLabel = tokenUnit === 'K' ? '1K' : '1M'
+  const readableUnit =
+    tokenUnit === 'K' ? t('Per thousand tokens') : t('Per million tokens')
   const billingTime = useBillingTime(props.model.billing_expr)
   const dynamic = useMemo(
     () =>
@@ -64,7 +68,8 @@ export function ModelPriceCell(props: {
         showRechargePrice: options.showRechargePrice,
         now: billingTime === undefined ? undefined : new Date(billingTime),
         tokenUnit,
-        showCurrencySymbol: false,
+        showCurrencySymbol: compact,
+        includeTierRanges: compact,
         groupRatioMultiplier: getDynamicDisplayGroupRatio(
           props.model,
           options.selectedGroup
@@ -79,10 +84,21 @@ export function ModelPriceCell(props: {
       options.usdExchangeRate,
       options.showRechargePrice,
       options.selectedGroup,
+      compact,
       billingTime,
       currency,
     ]
   )
+  if (
+    compact &&
+    !Number.isFinite(getCatalogGroupRatio(props.model, options.selectedGroup))
+  ) {
+    return (
+      <span className='text-muted-foreground' aria-label={t('Not configured')}>
+        —
+      </span>
+    )
+  }
   let metrics: Array<{ label: string; value: string }>
   const providerCaption = dynamic?.providerCount
     ? t('{{count}} providers', { count: dynamic.providerCount })
@@ -90,10 +106,12 @@ export function ModelPriceCell(props: {
   const unconfiguredCaption = dynamic?.hasUnconfiguredProviders
     ? t('Not configured for some providers')
     : ''
-  let caption = t('{{currency}} / {{unit}} tokens', {
-    currency: currencyLabel,
-    unit: tokenUnitLabel,
-  })
+  let caption = compact
+    ? readableUnit
+    : t('{{currency}} / {{unit}} tokens', {
+        currency: currencyLabel,
+        unit: tokenUnitLabel,
+      })
 
   if (dynamic) {
     if (dynamic.isSpecialExpression) {
@@ -157,7 +175,9 @@ export function ModelPriceCell(props: {
         </span>
       )
     }
-    if (dynamic.isTaskUsage || hasRequestPrice) caption = currencyLabel
+    if (dynamic.isTaskUsage || hasRequestPrice) {
+      caption = compact ? '' : currencyLabel
+    }
     if (dynamic.isTimePricing) caption += ` · ${t('Current period price')}`
     if (dynamic.isMixedBilling) {
       caption += ` · ${t('Token or per-call pricing')}`
@@ -199,7 +219,7 @@ export function ModelPriceCell(props: {
             options.priceRate,
             options.usdExchangeRate,
             options.selectedGroup,
-            false
+            compact
           ),
         },
         {
@@ -212,7 +232,7 @@ export function ModelPriceCell(props: {
             options.priceRate,
             options.usdExchangeRate,
             options.selectedGroup,
-            false
+            compact
           ),
         },
       ]
@@ -226,15 +246,24 @@ export function ModelPriceCell(props: {
             options.priceRate,
             options.usdExchangeRate,
             options.selectedGroup,
-            false
+            compact
           ),
         },
       ]
-      caption = `${currencyLabel} / ${t('request')}`
+      caption = compact
+        ? t('Per request')
+        : `${currencyLabel} / ${t('request')}`
     }
   }
+  if (compact) {
+    const groupCaption =
+      options.selectedGroup && options.selectedGroup !== FILTER_ALL
+        ? options.selectedGroup
+        : t('From')
+    caption = [groupCaption, caption].filter(Boolean).join(' · ')
+  }
   return (
-    <span className='block w-full max-w-full min-w-0 space-y-1.5'>
+    <span className='hema-catalog-table-price block w-full max-w-full min-w-0 space-y-1.5'>
       <span
         className={metrics.length > 1 ? 'grid grid-cols-2 gap-x-4' : 'grid'}
       >
